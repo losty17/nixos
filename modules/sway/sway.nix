@@ -7,13 +7,15 @@
       modifier = "Mod4";
       terminal = "ghostty";
       
-      defaultBorder = "pixel 1";
-      defaultFloatingBorder = "pixel 1";
-      hideEdgeBorders = "smart";
+      # defaultBorder = "pixel 1";
+      # defaultFloatingBorder = "pixel 1";
+      # hideEdgeBorders = "smart";
 
       startup = [
         { command = "noctalia-shell"; }
       ];
+
+      bars = [];
     };
     extraConfig = builtins.readFile ./config;
   };

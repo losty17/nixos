@@ -11,8 +11,8 @@
     settings = {
       user = {
         name = "Vinícius Kappke";
-	email = "vinikappke@gmail.com";
-	signingkey = "~/.ssh/id_ed25519.pub";
+        email = "vinikappke@gmail.com";
+        signingkey = "~/.ssh/id_ed25519.pub";
       };
 
       alias = {
@@ -20,8 +20,8 @@
       };
 
       gpg = {
-	format = "ssh";
-	ssh.allowedSignersFile = "~/.ssh/allowed_signers";
+        format = "ssh";
+        ssh.allowedSignersFile = "~/.ssh/allowed_signers";
       };
 
       commit.gpgsign = true;
@@ -30,7 +30,10 @@
   };
 
   imports = [
+    ../modules/zsh/zsh.nix
     ../modules/sway/sway.nix
+    ../modules/nvim/nvim.nix
+    ../modules/tmux/tmux.nix
     ../modules/noctalia/noctalia.nix
     ../modules/zen-browser/zen-browser.nix
   ];
@@ -41,20 +44,17 @@
     ghostty
     slack
     spotify
+    pyenv
+    bun
+    nodejs
+    fzf
+    ripgrep
+    gcc
+    cmake
+    go
+    fastfetch
+    tree
   ];
-
-  home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
-
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
-  };
 
   home.sessionVariables = {
     EDITOR = "nvim";

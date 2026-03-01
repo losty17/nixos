@@ -18,7 +18,7 @@
           left = [
             {
               id = "ControlCenter";
-              useDistroLogo = true;
+              # useDistroLogo = true;
             }
             {
               id = "Network";
@@ -57,7 +57,7 @@
       };
       location = {
         monthBeforeDay = true;
-        name = "Marseille, France";
+        name = "Santa Cruz do Sul, Rio Grande do Sul, Brasil";
       };
     };
     # this may also be a string or a path to a JSON file.

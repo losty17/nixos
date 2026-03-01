@@ -5,7 +5,7 @@
 let
   swayConfig = pkgs.writeText "greetd-sway-config" ''
     # `-l` activates layer-shell mode. Notice that `swaymsg exit` will run after gtkgreet.
-    exec "${pkgs.greetd.gtkgreet}/bin/gtkgreet -l; swaymsg exit"
+    exec "${pkgs.gtkgreet}/bin/gtkgreet -l; swaymsg exit"
     bindsym Mod4+shift+e exec swaynag \
       -t warning \
       -m 'What do you want to do?' \
@@ -22,6 +22,11 @@ in
       };
     };
   };
+
+  environment.etc."greetd/environments".text = ''
+    sway
+    bash
+  '';
 
   imports =
     [ 
@@ -78,12 +83,14 @@ in
 
   security.polkit.enable = true;
   programs.light.enable = true;
+  programs.zsh.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.kappke = {
     isNormalUser = true;
     description = "Vinícius Kappke";
     extraGroups = [ "networkmanager" "wheel" "video" ];
+    shell = pkgs.zsh;
     packages = with pkgs; [];
   };
 
@@ -94,16 +101,16 @@ in
     };
   };
 
+  virtualisation.docker = {
+    enable = true;
+  };
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    neovim
-  ];
+  environment.systemPackages = with pkgs; [];
 
   system.stateVersion = "25.11"; # Did you read the comment?
-
-
 }

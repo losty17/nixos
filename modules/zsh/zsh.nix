@@ -16,8 +16,8 @@
 
     oh-my-zsh = {
       enable = true;
-      plugins = [ "git" "thefuck" ];
-      theme = "lambda-gitster";
+      plugins = [ "git" ];
+        theme = "awesomepanda";
     };
   };
 }
