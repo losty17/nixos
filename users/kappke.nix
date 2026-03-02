@@ -54,10 +54,14 @@
     go
     fastfetch
     tree
+    tableplus
+    figma-linux
+    luajitPackages.luarocks_bootstrap
   ];
 
   home.sessionVariables = {
     EDITOR = "nvim";
+    GTK_IM_MODULE = "simple";
   };
 
   # Let Home Manager install and manage itself.

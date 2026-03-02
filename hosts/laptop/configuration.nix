@@ -72,6 +72,11 @@ in
     LC_TIME = "pt_BR.UTF-8";
   };
 
+  i18n.inputMethod = {
+    enabled = "ibus";
+    ibus.engines = with pkgs.ibus-engines; [];
+  };
+
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "br";
@@ -113,4 +118,23 @@ in
   environment.systemPackages = with pkgs; [];
 
   system.stateVersion = "25.11"; # Did you read the comment?
+
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 32 * 1024;
+    }
+  ];
+
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 30;
+  };
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
 }

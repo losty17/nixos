@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   wayland.windowManager.sway = {
@@ -16,7 +16,15 @@
       ];
 
       bars = [];
+
+      # keybindings = let
+      #   mod = config.wayland.windowManager.sway.config.modifier;
+      # in {
+      #   # Terminal
+      #   "${mod}+return" = "GTK_IM_MODULE=simple exec ghostty";    
+      # };
     };
+
     extraConfig = builtins.readFile ./config;
   };
 

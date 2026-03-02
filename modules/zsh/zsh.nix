@@ -10,6 +10,7 @@
     shellAliases = {
       ll = "ls -l";
       update = "sudo nixos-rebuild switch --flake /etc/nixos#kappke";
+      ghostty = "GTK_IM_MODULE=simple ghostty";
     };
     
     history.size = 10000;
