@@ -21,3 +21,6 @@ input "type:keyboard" {
   xkb_layout "us"
   xkb_variant "altgr-intl"
 }
+
+output HDMI-A-1 pos 0 0
+output eDP-1 pos 0 1080
