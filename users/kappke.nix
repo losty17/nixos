@@ -34,6 +34,7 @@
     ../modules/sway/sway.nix
     ../modules/nvim/nvim.nix
     ../modules/tmux/tmux.nix
+    ../modules/thunar/thunar.nix
     ../modules/noctalia/noctalia.nix
     ../modules/zen-browser/zen-browser.nix
   ];
@@ -51,12 +52,23 @@
     ripgrep
     gcc
     cmake
+    gnumake
     go
     fastfetch
     tree
+    tree-sitter # nvim utility
+    prettierd # general formatter 
+    black # python formatter
     tableplus
     figma-linux
     luajitPackages.luarocks_bootstrap
+    grim
+    slurp
+    wget
+    zip
+    unzip
+    python3
+    lua
   ];
 
   home.sessionVariables = {

@@ -12,6 +12,7 @@ bindsym --locked XF86AudioLowerVolume exec $ipc volume decrease
 bindsym --locked XF86AudioMute exec $ipc volume muteOutput
 bindsym --locked XF86MonBrightnessUp exec $ipc brightness increase
 bindsym --locked XF86MonBrightnessDown exec $ipc brightness decrease
+bindsym $mod+p exec grim -g "$(slurp)" - | wl-copy
 
 default_border pixel 1
 default_floating_border pixel 1

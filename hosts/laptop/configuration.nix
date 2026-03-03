@@ -53,6 +53,8 @@ in
 
   services.power-profiles-daemon.enable = true;
   services.upower.enable = true;
+  services.gvfs.enable = true;
+  services.tumbler.enable = true;
 
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
