@@ -117,7 +117,29 @@ in
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [];
+  environment.systemPackages = with pkgs; [
+    # programming
+    go
+    bun
+    nodejs
+    gcc
+    cmake
+    gnumake
+
+    # utilities
+    wget
+    zip
+    unzip
+    tree
+    fastfetch
+
+    # apps
+    kitty
+    ghostty
+
+    # system
+    google-fonts
+  ];
 
   system.stateVersion = "25.11"; # Did you read the comment?
 

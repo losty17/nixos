@@ -5,6 +5,10 @@
     inputs.noctalia.homeModules.default
   ];
 
+  home.packages = with pkgs; [
+    quickshell
+  ];
+
   # configure options
   programs.noctalia-shell = {
     enable = true;
@@ -19,12 +23,6 @@
             {
               id = "ControlCenter";
               # useDistroLogo = true;
-            }
-            {
-              id = "Network";
-            }
-            {
-              id = "Bluetooth";
             }
           ];
           center = [
@@ -41,6 +39,12 @@
               warningThreshold = 30;
             }
             {
+              id = "Bluetooth";
+            }
+            {
+              id = "Network";
+            }
+            {
               formatHorizontal = "HH:mm";
               formatVertical = "HH mm";
               id = "Clock";
@@ -54,6 +58,7 @@
       general = {
         avatarImage = "/home/drfoobar/.face";
         radiusRatio = 0.2;
+        enableShadows = false;
       };
       location = {
         monthBeforeDay = true;

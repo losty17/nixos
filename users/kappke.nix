@@ -26,6 +26,7 @@
 
       commit.gpgsign = true;
       init.defaultBranch = "master";
+      push.autoSetupRemote = true;
     };
   };
 
@@ -42,33 +43,10 @@
   nixpkgs.config.allowUnfree = true;
 
   home.packages = with pkgs; [
-    ghostty
     slack
     spotify
-    pyenv
-    bun
-    nodejs
-    fzf
-    ripgrep
-    gcc
-    cmake
-    gnumake
-    go
-    fastfetch
-    tree
-    tree-sitter # nvim utility
-    prettierd # general formatter 
-    black # python formatter
     tableplus
-    figma-linux
-    luajitPackages.luarocks_bootstrap
-    grim
-    slurp
-    wget
-    zip
-    unzip
-    python3
-    lua
+    bruno
   ];
 
   home.sessionVariables = {
