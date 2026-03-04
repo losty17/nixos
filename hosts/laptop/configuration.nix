@@ -3,9 +3,19 @@
 { config, inputs, pkgs, ... }:
 
 let
+  wallpaper = pkgs.copyPathToStore ./wallpapers/wallhaven-6llkol.png;
+
+  gtkgreetCSS = pkgs.writeText "gtkgreet.css" ''
+    window {
+      background-color: transparent;
+    }
+  '';
+
   swayConfig = pkgs.writeText "greetd-sway-config" ''
-    # `-l` activates layer-shell mode. Notice that `swaymsg exit` will run after gtkgreet.
-    exec "${pkgs.gtkgreet}/bin/gtkgreet -l; swaymsg exit"
+    output * bg ${wallpaper} fill
+
+    exec "${pkgs.gtkgreet}/bin/gtkgreet -l -s ${gtkgreetCSS}; swaymsg exit"
+
     bindsym Mod4+shift+e exec swaynag \
       -t warning \
       -m 'What do you want to do?' \
@@ -91,9 +101,18 @@ in
   security.polkit.enable = true;
   programs.light.enable = true;
   programs.zsh.enable = true;
+  programs.steam.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.kappke = {
+    isNormalUser = true;
+    description = "Vinícius Kappke";
+    extraGroups = [ "networkmanager" "wheel" "video" ];
+    shell = pkgs.zsh;
+    packages = with pkgs; [];
+  };
+
+  users.users.bini = {
     isNormalUser = true;
     description = "Vinícius Kappke";
     extraGroups = [ "networkmanager" "wheel" "video" ];
@@ -105,6 +124,7 @@ in
     extraSpecialArgs = { inherit inputs; };
     users = {
       "kappke" = import ../../users/kappke.nix;
+      "bini" = import ../../users/bini.nix;
     };
   };
 

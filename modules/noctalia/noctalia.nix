@@ -24,6 +24,12 @@
               id = "ControlCenter";
               # useDistroLogo = true;
             }
+            {
+              id = "ActiveWindow";
+            }
+            {
+              id = "AudioVisualizer";
+            }
           ];
           center = [
             {
@@ -33,6 +39,12 @@
             }
           ];
           right = [
+            {
+              id = "Tray";
+            }
+            {
+              id = "Volume";
+            }
             {
               alwaysShowPercentage = false;
               id = "Battery";

@@ -54,6 +54,35 @@
     GTK_IM_MODULE = "simple";
   };
 
+  # User targeted configuration
+  wayland.windowManager.sway = {
+    config = {
+      output = {
+        "HDMI-A-1" = { position = "0,0"; };
+        "eDP-1" = { position = "0,1080"; };
+      };
+
+      startup = [
+        { command = "zen"; }
+        { command = "slack"; }
+        { command = "spotify"; }
+      ];
+
+      assigns = {
+        "1" =  [{ app_id = "^Zen$"; }];
+        "2" =  [{ app_id = "^Slack$"; }];
+        "3" =  [{ app_id = "^Spotify$"; }];
+      };
+
+    };
+
+    extraConfig = ''
+      workspace 1 output HDMI-A-1
+      workspace 2 output eDP-1
+      workspace 3 output eDP-1
+    '';
+  };
+
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 }

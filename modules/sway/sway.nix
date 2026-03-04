@@ -11,6 +11,11 @@
       # defaultFloatingBorder = "pixel 1";
       # hideEdgeBorders = "smart";
 
+      output = {
+        "HDMI-A-1" = { position = "0,0"; };
+        "eDP-1" = { position = "0,1080"; };
+      };
+
       startup = [
         { command = "noctalia-shell"; }
       ];

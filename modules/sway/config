@@ -11,5 +11,7 @@ input "type:keyboard" {
   xkb_variant "altgr-intl"
 }
 
-output HDMI-A-1 pos 0 0
-output eDP-1 pos 0 1080
+
+workspace 1 output HDMI-A-1
+workspace 2 output eDP-1
+workspace 3 output eDP-1
