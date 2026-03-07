@@ -53,6 +53,7 @@
     tableplus
     bruno
     discord
+    ani-cli
   ];
 
   home.sessionVariables = {
