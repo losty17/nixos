@@ -3,41 +3,110 @@
 {
   wayland.windowManager.sway = {
     enable = true;
+    package = pkgs.swayfx;
+    checkConfig = false; # enable swayfx configs
+
     config = rec {
       modifier = "Mod4";
       terminal = "ghostty";
-      
-      # defaultBorder = "pixel 1";
-      # defaultFloatingBorder = "pixel 1";
-      # hideEdgeBorders = "smart";
 
-      output = {
-        "HDMI-A-1" = { position = "0,0"; };
-        "eDP-1" = { position = "0,1080"; };
+      window = {
+        border = 2;
+        titlebar = false;
+        hideEdgeBorders = "smart";
       };
+
+      colors = {
+        focused = {
+          border = "#774c81";
+          background = "#774c81";
+          text = "#774c81";
+          indicator = "#774c81";
+          childBorder = "#774c81";
+        };
+        focusedInactive = {
+          border = "#392A48";
+          background = "#392A48";
+          text = "#392A48";
+          indicator = "#392A48";
+          childBorder = "#392A48";
+        };
+        unfocused = {
+          border = "#392A48";
+          background = "#392A48";
+          text = "#392A48";
+          indicator = "#392A48";
+          childBorder = "#392A48";
+        };
+        urgent = {
+          border = "#2f343a";
+          background = "#900000";
+          text = "#ffffff";
+          indicator = "#900000";
+          childBorder = "#900000";
+        };
+      };
+
+      floating.border = 1;
+      gaps.inner = 8;
+
+      bars = [];
 
       startup = [
         { command = "noctalia-shell"; }
       ];
 
-      bars = [];
+      input = {
+        "type:keyboard" = {
+          xkb_layout = "us";
+          xkb_variant = "intl";
+        };
+      };
+
+      output = {
+        "HDMI-A-1" = { position = "1920,0"; };
+        "eDP-1" = { position = "0,0"; };
+      };
 
       keybindings = let
         mod = config.wayland.windowManager.sway.config.modifier;
       in lib.mkOptionDefault {
-        "${mod}+d" = "exec noctalia-shell ipc call launcher toggle";    
-        "${mod}+Return" = "exec ${config.wayland.windowManager.sway.config.terminal}";
-        "${mod}+Shift+q" = "kill";
-        "${mod}+Shift+4" = "exec grim -g \"$(slurp)\" - | wl-copy";
+        # unset defaults
+        "${mod}+e" = null; # layout split 
+        "${mod}+w" = null; # layout tabbed
+        "${mod}+Shift+q" = null; # kill application
+        "${mod}+Shift+e" = null; # exit sway shortcut
+
+        # set custom bindings
+        "${mod}+d" = "exec noctalia-shell ipc call launcher toggle"; # toggle launcher
+        "${mod}+Return" = "exec ${config.wayland.windowManager.sway.config.terminal}"; # open terminal
+        "${mod}+Shift+s" = "exec grim -g \"$(slurp)\" - | wl-copy"; # screenshot
+        "Mod1+Shift+q" = "kill"; # kill focused app
+
+        # function keys
         "XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +5%";
         "XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -5%";
         "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
         "XF86MonBrightnessUp" = "exec brightnessctl set +10%";
         "XF86MonBrightnessDown" = "exec brightnessctl set 10%-";
+        "XF86AudioPlay" = "exec playerctl play-pause";
+        "XF86AudioNext" = "exec playerctl next";
+        "XF86AudioPrev" = "exec playerctl prev";
       };
     };
 
-    extraConfig = builtins.readFile ./config;
+    extraConfig = ''
+      corner_radius 8
+      blur enable
+      blur_xray disable
+      blur_passes 2
+      blur_radius 5
+    
+      # Ghostty-specific rules
+      for_window [app_id="com.mitchellh.ghostty"] {
+        blur enable
+      }
+    '';
   };
 
   home.packages = with pkgs; [
@@ -45,6 +114,9 @@
     slurp
     swaylock
     swayidle
+    playerctl
+    pulseaudio
+    brightnessctl
     wl-clipboard
   ];
 }

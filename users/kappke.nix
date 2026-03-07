@@ -15,18 +15,23 @@
         signingkey = "~/.ssh/id_ed25519.pub";
       };
 
-      alias = {
-        
-      };
-
       gpg = {
         format = "ssh";
         ssh.allowedSignersFile = "~/.ssh/allowed_signers";
       };
 
       commit.gpgsign = true;
-      init.defaultBranch = "master";
       push.autoSetupRemote = true;
+      init.defaultBranch = "master";
+    };
+  };
+
+  programs.ghostty = {
+    enable = true;
+    settings = {
+      background = "#1E1E1E";
+      background-opacity = 0.75;
+      background-blur-radius = 20;
     };
   };
 
@@ -47,6 +52,7 @@
     spotify
     tableplus
     bruno
+    discord
   ];
 
   home.sessionVariables = {
@@ -57,29 +63,39 @@
   # User targeted configuration
   wayland.windowManager.sway = {
     config = {
-      output = {
-        "HDMI-A-1" = { position = "0,0"; };
-        "eDP-1" = { position = "0,1080"; };
-      };
-
       startup = [
+        { command = "swaymsg 'workspace 1; workspace 4; workspace 5; workspace 1'"; }
         { command = "zen"; }
         { command = "slack"; }
         { command = "spotify"; }
       ];
 
+      workspaceOutputAssign = [
+        { workspace = "1"; output = "HDMI-A-1"; }
+        { workspace = "2"; output = "HDMI-A-1"; }
+        { workspace = "3"; output = "HDMI-A-1"; }
+        { workspace = "4"; output = "eDP-1"; }
+        { workspace = "5"; output = "eDP-1"; }
+        { workspace = "6"; output = "eDP-1"; } 
+      ];
+
       assigns = {
         "1" =  [{ app_id = "^Zen$"; }];
-        "2" =  [{ app_id = "^Slack$"; }];
-        "3" =  [{ app_id = "^Spotify$"; }];
+        "4" =  [{ app_id = "^Slack$"; }];
+        "5" =  [{ class = "^Spotify$"; }];
       };
-
     };
 
     extraConfig = ''
-      workspace 1 output HDMI-A-1
-      workspace 2 output eDP-1
-      workspace 3 output eDP-1
+      set $mod Mod4
+
+      bindsym $mod+q workspace number 4
+      bindsym $mod+w workspace number 5
+      bindsym $mod+e workspace number 6
+      
+      bindsym $mod+Shift+q move container to workspace number 4
+      bindsym $mod+Shift+w move container to workspace number 5
+      bindsym $mod+Shift+e move container to workspace number 6
     '';
   };
 

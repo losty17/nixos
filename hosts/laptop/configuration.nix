@@ -38,6 +38,7 @@ in
     bash
   '';
 
+
   imports =
     [ 
       ./hardware-configuration.nix
@@ -45,8 +46,41 @@ in
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # boot.loader.systemd-boot.enable = true;
+  # boot.loader.efi.canTouchEfiVariables = true;
+
+  boot = {
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+
+    plymouth = {
+      enable = true;
+      theme = "rings";  # or "bgrt" for OEM logo
+      themePackages = with pkgs; [
+        (adi1090x-plymouth-themes.override {
+          selected_themes = [ "rings" ];
+        })
+      ];
+    };
+
+    # Silent boot configuration
+    consoleLogLevel = 0;
+    initrd.verbose = false;
+    kernelParams = [
+      "quiet"
+      "splash"
+      "boot.shell_on_fail"
+      "loglevel=3"
+      "rd.systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "udev.log_priority=3"
+    ];
+
+    # Optional: hide bootloader menu
+    # loader.timeout = 0;
+  };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -65,6 +99,9 @@ in
   services.upower.enable = true;
   services.gvfs.enable = true;
   services.tumbler.enable = true;
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.login.enableGnomeKeyring = true;
+  programs.seahorse.enable = true;
 
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
@@ -85,7 +122,8 @@ in
   };
 
   i18n.inputMethod = {
-    enabled = "ibus";
+    enable = true;
+    type = "ibus";
     ibus.engines = with pkgs.ibus-engines; [];
   };
 
@@ -112,19 +150,10 @@ in
     packages = with pkgs; [];
   };
 
-  users.users.bini = {
-    isNormalUser = true;
-    description = "Vinícius Kappke";
-    extraGroups = [ "networkmanager" "wheel" "video" ];
-    shell = pkgs.zsh;
-    packages = with pkgs; [];
-  };
-
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {
       "kappke" = import ../../users/kappke.nix;
-      "bini" = import ../../users/bini.nix;
     };
   };
 
@@ -151,14 +180,22 @@ in
     zip
     unzip
     tree
+    htop
+    btop
     fastfetch
+    github-cli
 
     # apps
     kitty
     ghostty
+  ];
 
-    # system
-    google-fonts
+  fonts.packages = with pkgs; [
+    # ui
+    roboto
+    roboto-slab
+    roboto-mono
+    roboto-serif
   ];
 
   system.stateVersion = "25.11"; # Did you read the comment?
