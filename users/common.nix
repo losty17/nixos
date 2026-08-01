@@ -1,6 +1,16 @@
 { config, pkgs, ... }:
 
-{
+let
+  userScripts = pkgs.runCommand "user-scripts" { } ''
+    mkdir -p $out
+    for f in ${../scripts}/*; do
+      [ -f "$f" ] || continue
+      name="$(basename "$f")"
+      cp "$f" "$out/''${name%.*}"
+    done
+    find $out -type f -exec chmod +x {} +
+  '';
+in {
   home.username = "kappke";
   home.homeDirectory = "/home/kappke";
 
@@ -37,13 +47,20 @@
   home.packages = with pkgs; [
     wget
     zip
+    nvd
     unzip
     tree
     btop
+    openssl
     ethtool
     fastfetch
     speedtest-cli
   ];
+
+  home.file.".local/bin" = {
+    source = "${userScripts}";
+    recursive = true;
+  };
 
   home.sessionVariables = {
     EDITOR = "nvim";

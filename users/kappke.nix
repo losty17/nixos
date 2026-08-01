@@ -19,18 +19,6 @@
     };
   };
 
-  programs.kitty = {
-    enable = true;
-    settings = {
-      font_size = 12.0;
-      font_family = "Fira Code";
-      background = "#0a0a0a";
-      foreground = "#e6e8ee";
-      cursor_trail = 1;
-      enable_audio_bell = false;
-    };
-  };
-
   home.packages = with pkgs; [
     spotify
     discord
@@ -39,15 +27,21 @@
     ngrok
     live-server
     mosh
+    tokei
 
     # work related 
     bruno
     posting
+    lazygit
     opencode
-    gemini-cli
     tableplus
     redisinsight
+    google-cloud-sdk
     (mongodb-compass.overrideAttrs (oldAttrs: {
+      buildCommand = builtins.replaceStrings
+        [ "wrapGAppsHook $out/bin/mongodb-compass" ]
+        [ ":" ]
+        oldAttrs.buildCommand;
       installPhase = oldAttrs.installPhase + ''
         wrapProgram $out/bin/mongodb-compass \
           --add-flags "--password-store=gnome-libsecret --ignore-additional-command-line-flags"
