@@ -31,10 +31,12 @@
 
     # work related 
     bruno
+    rustdesk
     posting
     lazygit
     opencode
     tableplus
+    lazydocker
     redisinsight
     google-cloud-sdk
     (mongodb-compass.overrideAttrs (oldAttrs: {
