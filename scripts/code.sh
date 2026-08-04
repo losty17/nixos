@@ -214,15 +214,15 @@ resolve_project() {
 # tmux setup
 # ---------------------------------------------------------------------------
 window_exists() {
-    tmux list-windows -t "$TARGET_PROJECT" -F '#{window_name}' 2>/dev/null | grep -qx "$1"
+    tmux list-windows -t "=$TARGET_PROJECT" -F '#{window_name}' 2>/dev/null | grep -qx "$1"
 }
 
 ensure_session() {
-    if tmux has-session -t "$TARGET_PROJECT" 2>/dev/null; then
+    if tmux has-session -t "=$TARGET_PROJECT" 2>/dev/null; then
         return
     fi
     tmux new-session -d -s "$TARGET_PROJECT" -c "$PROJECT_DIR"
-    tmux rename-window -t "$TARGET_PROJECT:1" terminal
+    tmux rename-window -t "=$TARGET_PROJECT:1" terminal
 }
 
 ensure_requests_dir() {
@@ -240,9 +240,9 @@ create_missing_windows() {
     for name in "${WINDOW_ORDER[@]}"; do
         window_exists "$name" && continue
 
-        tmux new-window -t "$TARGET_PROJECT" -n "$name" -c "$PROJECT_DIR"
+        tmux new-window -t "=$TARGET_PROJECT" -n "$name" -c "$PROJECT_DIR"
         if [ -n "${WINDOW_CMD[$name]:-}" ]; then
-            tmux send-keys -t "$TARGET_PROJECT:$name" "${WINDOW_CMD[$name]}" Enter
+            tmux send-keys -t "=$TARGET_PROJECT:$name" "${WINDOW_CMD[$name]}" Enter
         fi
     done
 }
@@ -254,7 +254,7 @@ reorder_windows() {
     # final-position moves in pass 2 never collide with each other.
     for name in "${WINDOW_ORDER[@]}"; do
         if window_exists "$name"; then
-            tmux move-window -s "$TARGET_PROJECT:$name" -t "$TARGET_PROJECT:$tmp_index" 2>/dev/null
+            tmux move-window -s "=$TARGET_PROJECT:$name" -t "=$TARGET_PROJECT:$tmp_index" 2>/dev/null
             tmp_index=$((tmp_index + 1))
         fi
     done
@@ -262,19 +262,19 @@ reorder_windows() {
     # Pass 2: place windows into their final positions, in WINDOW_ORDER order.
     for name in "${WINDOW_ORDER[@]}"; do
         if window_exists "$name"; then
-            tmux move-window -s "$TARGET_PROJECT:$name" -t "$TARGET_PROJECT:$final_index" 2>/dev/null
+            tmux move-window -s "=$TARGET_PROJECT:$name" -t "=$TARGET_PROJECT:$final_index" 2>/dev/null
             final_index=$((final_index + 1))
         fi
     done
 }
 
 attach_or_switch() {
-    tmux select-window -t "$TARGET_PROJECT:terminal"
+    tmux select-window -t "=$TARGET_PROJECT:terminal"
 
     if [ -n "${TMUX:-}" ]; then
-        tmux switch-client -t "$TARGET_PROJECT"
+        tmux switch-client -t "=$TARGET_PROJECT"
     else
-        tmux attach -t "$TARGET_PROJECT"
+        tmux attach -t "=$TARGET_PROJECT"
     fi
 }
 
