@@ -20,6 +20,7 @@
   };
 
   home.packages = with pkgs; [
+    vicinae
     spotify
     discord
     ani-cli
@@ -74,6 +75,7 @@
     config = {
       startup = [
         { command = "swaymsg 'workspace 1; workspace 4; workspace 5; workspace 1'"; }
+        { command = "vicinae server"; }
         { command = "zen"; }
         { command = "slack"; }
         { command = "spotify"; }

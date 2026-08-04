@@ -17,7 +17,6 @@
       terminal = "ghostty";
 
       window = {
-        # border = 2;
         border = 0;
         titlebar = false;
         hideEdgeBorders = "smart";
@@ -88,7 +87,7 @@
         "${mod}+Shift+e" = null; # exit sway shortcut
 
         # set custom bindings
-        "${mod}+d" = "exec noctalia-shell ipc call launcher toggle"; # toggle launcher
+        "${mod}+d" = "exec vicinae toggle"; # toggle launcher
         "${mod}+Return" = "exec ${config.wayland.windowManager.sway.config.terminal}"; # open terminal
         "${mod}+Shift+s" = "exec grim -g \"$(slurp)\" - | wl-copy"; # screenshot
         "Mod1+Shift+q" = "kill"; # kill focused app
