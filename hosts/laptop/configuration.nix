@@ -87,8 +87,13 @@ in
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.hostName = "kappke"; # Define your hostname.
   networking.networkmanager.enable = true;
+  networking.networkmanager.wifi.powersave = false; 
   networking.firewall.trustedInterfaces = [ "docker0" ];
   networking.firewall.allowedTCPPorts = [ 8080 ];
+
+  boot.extraModprobeConfig = ''
+    options rtw88_pci disable_aspm=1
+  '';
 
   hardware.bluetooth.enable = true;
 
