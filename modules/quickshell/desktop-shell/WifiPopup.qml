@@ -1,0 +1,367 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import Quickshell
+import Quickshell.Networking
+
+PopupWindow {
+    id: root
+
+    property var panelWindow
+    property var wifiDevice
+    property bool open: false
+    property var pendingNetwork: null
+    property bool passwordPrompt: false
+    property string errorMessage: ""
+    signal closeRequested()
+
+    visible: open
+    grabFocus: true
+    color: "transparent"
+    implicitWidth: 360
+    implicitHeight: passwordPrompt ? 230 : 430
+
+    anchor.window: panelWindow
+    anchor.rect.x: panelWindow ? panelWindow.width - width - 4 : 0
+    anchor.rect.y: panelWindow ? panelWindow.height + 4 : 0
+    anchor.edges: Edges.Top | Edges.Left
+    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.adjustment: PopupAdjustment.All
+
+    onVisibleChanged: {
+        if (!visible) {
+            if (wifiDevice)
+                wifiDevice.scannerEnabled = false;
+            if (panelWindow && panelWindow.wifiOpen)
+                panelWindow.wifiOpen = false;
+            passwordPrompt = false;
+            pendingNetwork = null;
+            errorMessage = "";
+        } else if (wifiDevice) {
+            wifiDevice.scannerEnabled = true;
+        }
+    }
+
+    onPasswordPromptChanged: {
+        if (passwordPrompt)
+            passwordInput.forceActiveFocus();
+    }
+
+    function selectNetwork(network) {
+        if (!network || network.stateChanging)
+            return;
+
+        errorMessage = "";
+        pendingNetwork = network;
+
+        if (network.known || network.security === WifiSecurityType.Open || network.security === WifiSecurityType.Owe) {
+            network.connect();
+            errorMessage = "Connecting...";
+            return;
+        }
+
+        passwordInput.text = "";
+        passwordPrompt = true;
+    }
+
+    function submitPassword() {
+        if (!pendingNetwork || passwordInput.text.length === 0) {
+            errorMessage = "Enter a password to continue.";
+            return;
+        }
+
+        pendingNetwork.connectWithPsk(passwordInput.text);
+        passwordPrompt = false;
+        errorMessage = "Connecting...";
+    }
+
+    Connections {
+        target: root.pendingNetwork
+
+        function onConnectionFailed(reason) {
+            root.errorMessage = "Could not connect. Check the password.";
+            root.passwordPrompt = true;
+            passwordInput.text = "";
+        }
+    }
+
+    Rectangle {
+        id: card
+
+        anchors.fill: parent
+        radius: 10
+        color: "#14151a"
+        border.width: 1
+        border.color: "#30323b"
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 16
+            spacing: 10
+            visible: !root.passwordPrompt
+
+            Row {
+                width: parent.width
+                height: 32
+                spacing: 8
+
+                Column {
+                    id: headerContent
+
+                    spacing: 2
+
+                    Text {
+                        text: "Wi-Fi"
+                        color: "#e6e8ee"
+                        font.bold: true
+                        font.pixelSize: 16
+                    }
+
+                    Text {
+                        text: root.wifiDevice ? root.wifiDevice.name : "No adapter"
+                        color: "#8f94a3"
+                        font.pixelSize: 11
+                    }
+                }
+
+                Item {
+                    width: parent.width - headerContent.width - refreshButton.width - 8
+                    height: 1
+                }
+
+                ConnectivityButton {
+                    id: refreshButton
+
+                    icon: "\uf021"
+                    onClicked: if (root.wifiDevice) root.wifiDevice.scannerEnabled = true
+                }
+            }
+
+            Rectangle {
+                width: parent.width
+                height: 36
+                radius: 7
+                color: "#1c1d22"
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Wi-Fi"
+                    color: "#e6e8ee"
+                    font.pixelSize: 13
+                }
+
+                Text {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Networking.wifiEnabled ? "On" : "Off"
+                    color: Networking.wifiEnabled ? "#d8b8e3" : "#8f94a3"
+                    font.pixelSize: 12
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
+                }
+            }
+
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: "#30323b"
+            }
+
+            Row {
+                width: parent.width
+                height: 20
+
+                Text {
+                    id: nearbyTitle
+
+                    text: "Nearby networks"
+                    color: "#e6e8ee"
+                    font.bold: true
+                    font.pixelSize: 13
+                }
+
+                Item {
+                    width: parent.width - nearbyTitle.width - scanningLabel.width
+                    height: 1
+                }
+
+                Text {
+                    id: scanningLabel
+
+                    text: root.wifiDevice && root.wifiDevice.scannerEnabled ? "Scanning..." : ""
+                    color: "#8f94a3"
+                    font.pixelSize: 11
+                }
+            }
+
+            Item {
+                width: parent.width
+                height: 245
+
+                ListView {
+                    anchors.fill: parent
+                    spacing: 4
+                    clip: true
+                    model: root.wifiDevice ? root.wifiDevice.networks : null
+
+                    delegate: WifiNetworkRow {
+                        required property var modelData
+
+                        network: modelData
+                        onActivated: root.selectNetwork(network)
+                    }
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    visible: !root.wifiDevice || root.wifiDevice.networks.values.length === 0
+                    text: root.wifiDevice ? "No networks found" : "No Wi-Fi adapter"
+                    color: "#8f94a3"
+                    font.pixelSize: 12
+                }
+            }
+
+            Text {
+                width: parent.width
+                visible: root.errorMessage.length > 0
+                text: root.errorMessage
+                color: root.errorMessage === "Connecting..." ? "#d8b8e3" : "#e06c75"
+                elide: Text.ElideRight
+                font.pixelSize: 11
+            }
+        }
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 16
+            spacing: 12
+            visible: root.passwordPrompt
+
+            Text {
+                text: "Connect to Wi-Fi"
+                color: "#e6e8ee"
+                font.bold: true
+                font.pixelSize: 16
+            }
+
+            Text {
+                width: parent.width
+                text: root.pendingNetwork ? root.pendingNetwork.name : ""
+                color: "#8f94a3"
+                elide: Text.ElideRight
+                font.pixelSize: 12
+            }
+
+            Rectangle {
+                width: parent.width
+                height: 40
+                radius: 7
+                color: "#1c1d22"
+                border.width: passwordInput.activeFocus ? 1 : 0
+                border.color: "#774c81"
+
+                TextInput {
+                    id: passwordInput
+
+                    anchors.fill: parent
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                    verticalAlignment: TextInput.AlignVCenter
+                    color: "#e6e8ee"
+                    echoMode: TextInput.Password
+                    font.pixelSize: 13
+                    selectByMouse: true
+                    focus: root.passwordPrompt
+                    Keys.onReturnPressed: root.submitPassword()
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: passwordInput.text.length === 0
+                        text: "Password"
+                        color: "#666b78"
+                        font.pixelSize: 13
+                    }
+                }
+            }
+
+            Text {
+                width: parent.width
+                visible: root.errorMessage.length > 0 && root.errorMessage !== "Connecting..."
+                text: root.errorMessage
+                color: "#e06c75"
+                wrapMode: Text.WordWrap
+                font.pixelSize: 11
+            }
+
+            Row {
+                width: parent.width
+                height: 36
+                spacing: 8
+
+                Item {
+                    width: parent.width - cancelButton.width - connectButton.width - 8
+                    height: 1
+                }
+
+                Rectangle {
+                    id: cancelButton
+
+                    width: 86
+                    height: 36
+                    radius: 7
+                    color: cancelMouse.containsMouse ? "#2a202f" : "#1c1d22"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Cancel"
+                        color: "#e6e8ee"
+                        font.pixelSize: 12
+                    }
+
+                    MouseArea {
+                        id: cancelMouse
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.passwordPrompt = false
+                    }
+                }
+
+                Rectangle {
+                    id: connectButton
+
+                    width: 86
+                    height: 36
+                    radius: 7
+                    color: connectMouse.containsMouse ? "#91609c" : "#774c81"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Connect"
+                        color: "#ffffff"
+                        font.bold: true
+                        font.pixelSize: 12
+                    }
+
+                    MouseArea {
+                        id: connectMouse
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.submitPassword()
+                    }
+                }
+            }
+        }
+    }
+}

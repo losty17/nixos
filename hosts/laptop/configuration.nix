@@ -211,7 +211,7 @@ in
     roboto-serif
     fira-code
     fira-code-symbols
-    # nerdfonts
+    nerd-fonts.symbols-only
   ];
 
   system.stateVersion = "25.11"; # Did you read the comment?
