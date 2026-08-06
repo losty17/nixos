@@ -58,11 +58,6 @@
 
       bars = [];
 
-      startup = [
-        { command = "noctalia-shell"; }
-      ];
-
-
       input = {
         "type:keyboard" = {
           # xkb_layout = "custom";
@@ -91,7 +86,7 @@
         "${mod}+Return" = "exec ${config.wayland.windowManager.sway.config.terminal}"; # open terminal
         "${mod}+Shift+s" = "exec grim -g \"$(slurp)\" - | wl-copy"; # screenshot
         "Mod1+Shift+q" = "kill"; # kill focused app
-        "Mod1+l" = "noctalia-shell ipc call lockScreen lock"; # lock screen
+        "Mod1+l" = "exec qs ipc call session lock"; # lock screen
 
         # function keys
         "XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +5%";

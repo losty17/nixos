@@ -6,7 +6,6 @@
     ../modules/sway/sway.nix
     ../modules/quickshell/desktop-shell.nix
     ../modules/thunar/thunar.nix
-    ../modules/noctalia/noctalia.nix
     ../modules/zen-browser/zen-browser.nix
   ];
 
