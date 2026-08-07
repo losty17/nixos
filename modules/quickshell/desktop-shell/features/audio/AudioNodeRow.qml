@@ -1,4 +1,5 @@
 import QtQuick
+import "../../components" as UI
 
 Item {
     id: root
@@ -24,9 +25,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 7
-        color: root.selected ? "#201d2a" : mouseArea.containsMouse ? "#2a202f" : "#1c1d22"
+        color: root.selected ? UI.Theme.selected : mouseArea.containsMouse ? UI.Theme.hover : UI.Theme.raised
         border.width: root.selected ? 1 : 0
-        border.color: "#774c81"
+        border.color: UI.Theme.accent
     }
 
     Text {
@@ -35,8 +36,8 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 8
         text: root.role === "sink" ? "\uf028" : root.role === "source" ? "\uf130" : "\uf1d8"
-        color: root.selected ? "#d8b8e3" : "#8f94a3"
-        font.family: "Symbols Nerd Font"
+        color: root.selected ? UI.Theme.accentText : UI.Theme.mutedText
+        font.family: UI.Theme.iconFont
         font.pixelSize: 15
     }
 
@@ -52,14 +53,14 @@ Item {
         Text {
             width: parent.width
             text: root.displayName()
-            color: "#e6e8ee"
+            color: UI.Theme.text
             elide: Text.ElideRight
             font.pixelSize: 12
         }
 
         Text {
             text: root.role === "sink" ? "Output" : root.role === "source" ? "Input" : "Application stream"
-            color: "#8f94a3"
+            color: UI.Theme.mutedText
             font.pixelSize: 10
         }
     }
@@ -72,7 +73,7 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 9
         text: root.node && root.node.audio && root.node.audio.muted ? "Muted" : Math.round(root.volume() * 100) + "%"
-        color: root.node && root.node.audio && root.node.audio.muted ? "#e06c75" : "#8f94a3"
+        color: root.node && root.node.audio && root.node.audio.muted ? UI.Theme.danger : UI.Theme.mutedText
         font.pixelSize: 10
     }
 
@@ -87,13 +88,13 @@ Item {
         anchors.bottomMargin: 8
         height: 4
         radius: 2
-        color: "#30323b"
+        color: UI.Theme.border
 
         Rectangle {
             width: parent.width * root.volume()
             height: parent.height
             radius: 2
-            color: root.node && root.node.audio && root.node.audio.muted ? "#666b78" : "#774c81"
+            color: root.node && root.node.audio && root.node.audio.muted ? UI.Theme.subduedText : UI.Theme.accent
         }
 
         MouseArea {

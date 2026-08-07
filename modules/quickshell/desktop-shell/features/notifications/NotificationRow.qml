@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import "../../components" as UI
 
 Item {
     id: root
@@ -24,7 +25,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 8
-        color: mouseArea.containsMouse ? "#2a202f" : "#1c1d22"
+        color: mouseArea.containsMouse ? UI.Theme.hover : UI.Theme.raised
     }
 
     IconImage {
@@ -50,7 +51,7 @@ Item {
         Text {
             width: parent.width
             text: root.notification ? (root.notification.appName || "Notification") : ""
-            color: "#8f94a3"
+            color: UI.Theme.mutedText
             elide: Text.ElideRight
             font.pixelSize: 10
         }
@@ -58,7 +59,7 @@ Item {
         Text {
             width: parent.width
             text: root.notification ? root.notification.summary : ""
-            color: "#e6e8ee"
+            color: UI.Theme.text
             elide: Text.ElideRight
             font.bold: true
             font.pixelSize: 12
@@ -67,7 +68,7 @@ Item {
         Text {
             width: parent.width
             text: root.notification ? root.notification.body : ""
-            color: "#c7cad4"
+            color: UI.Theme.secondaryText
             elide: Text.ElideRight
             maximumLineCount: 2
             wrapMode: Text.Wrap
@@ -76,7 +77,7 @@ Item {
         }
     }
 
-    ConnectivityButton {
+    UI.IconButton {
         id: dismissButton
 
         anchors.right: parent.right
@@ -108,14 +109,14 @@ Item {
                 width: Math.min(120, Math.max(58, actionLabel.implicitWidth + 18))
                 height: 24
                 radius: 5
-                color: actionMouse.containsMouse ? "#774c81" : "#30323b"
+                color: actionMouse.containsMouse ? UI.Theme.accent : UI.Theme.border
 
                 Text {
                     id: actionLabel
 
                     anchors.centerIn: parent
                     text: modelData.text
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     elide: Text.ElideRight
                     font.pixelSize: 10
                 }

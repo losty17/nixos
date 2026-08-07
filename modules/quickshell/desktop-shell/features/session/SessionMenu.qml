@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -26,16 +27,12 @@ PopupWindow {
     anchor.adjustment: PopupAdjustment.All
 
     onVisibleChanged: {
-        if (!visible && panelWindow)
-            panelWindow.sessionOpen = false;
+        if (!visible && open)
+            root.closeRequested();
     }
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -44,26 +41,26 @@ PopupWindow {
 
             Text {
                 text: "Session"
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 font.bold: true
                 font.pixelSize: 16
             }
 
             Text {
                 text: "Power and session controls"
-                color: "#8f94a3"
+                color: UI.Theme.mutedText
                 font.pixelSize: 11
             }
 
-            Rectangle { width: parent.width; height: 1; color: "#30323b" }
+            UI.Divider { width: parent.width }
 
             Rectangle {
                 width: parent.width
                 height: 36
                 radius: 7
-                color: lockMouse.containsMouse ? "#2a202f" : "#1c1d22"
+                color: lockMouse.containsMouse ? UI.Theme.hover : UI.Theme.raised
 
-                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf023  Lock screen"; color: "#e6e8ee"; font.pixelSize: 12 }
+                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf023  Lock screen"; color: UI.Theme.text; font.pixelSize: 12 }
                 MouseArea { id: lockMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.lockRequested() }
             }
 
@@ -71,10 +68,10 @@ PopupWindow {
                 width: parent.width
                 height: 36
                 radius: 7
-                color: idleMouse.containsMouse ? "#2a202f" : "#1c1d22"
+                color: idleMouse.containsMouse ? UI.Theme.hover : UI.Theme.raised
 
-                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf2f2  Idle lock"; color: "#e6e8ee"; font.pixelSize: 12 }
-                Text { anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: root.idleLockEnabled ? "On" : "Off"; color: root.idleLockEnabled ? "#d8b8e3" : "#8f94a3"; font.pixelSize: 11 }
+                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf2f2  Idle lock"; color: UI.Theme.text; font.pixelSize: 12 }
+                Text { anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: root.idleLockEnabled ? "On" : "Off"; color: root.idleLockEnabled ? UI.Theme.accentText : UI.Theme.mutedText; font.pixelSize: 11 }
                 MouseArea { id: idleMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.toggleIdleRequested() }
             }
 
@@ -82,9 +79,9 @@ PopupWindow {
                 width: parent.width
                 height: 36
                 radius: 7
-                color: logoutMouse.containsMouse ? "#2a202f" : "#1c1d22"
+                color: logoutMouse.containsMouse ? UI.Theme.hover : UI.Theme.raised
 
-                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf08b  Log out"; color: "#e6e8ee"; font.pixelSize: 12 }
+                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf08b  Log out"; color: UI.Theme.text; font.pixelSize: 12 }
                 MouseArea { id: logoutMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.actionRequested("logout") }
             }
 
@@ -92,9 +89,9 @@ PopupWindow {
                 width: parent.width
                 height: 36
                 radius: 7
-                color: suspendMouse.containsMouse ? "#2a202f" : "#1c1d22"
+                color: suspendMouse.containsMouse ? UI.Theme.hover : UI.Theme.raised
 
-                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf4b3  Suspend"; color: "#e6e8ee"; font.pixelSize: 12 }
+                Text { anchors.left: parent.left; anchors.leftMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "\uf4b3  Suspend"; color: UI.Theme.text; font.pixelSize: 12 }
                 MouseArea { id: suspendMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.actionRequested("suspend") }
             }
 
@@ -107,8 +104,8 @@ PopupWindow {
                     width: (parent.width - 7) / 2
                     height: 36
                     radius: 7
-                    color: rebootMouse.containsMouse ? "#2a202f" : "#1c1d22"
-                    Text { anchors.centerIn: parent; text: "\uf021  Reboot"; color: "#e6e8ee"; font.pixelSize: 11 }
+                    color: rebootMouse.containsMouse ? UI.Theme.hover : UI.Theme.raised
+                    Text { anchors.centerIn: parent; text: "\uf021  Reboot"; color: UI.Theme.text; font.pixelSize: 11 }
                     MouseArea { id: rebootMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.actionRequested("reboot") }
                 }
 
@@ -116,8 +113,8 @@ PopupWindow {
                     width: (parent.width - 7) / 2
                     height: 36
                     radius: 7
-                    color: shutdownMouse.containsMouse ? "#7b3038" : "#4c2028"
-                    Text { anchors.centerIn: parent; text: "\uf011  Shut down"; color: "#ffffff"; font.pixelSize: 11 }
+                    color: shutdownMouse.containsMouse ? UI.Theme.dangerHover : UI.Theme.dangerSurface
+                    Text { anchors.centerIn: parent; text: "\uf011  Shut down"; color: UI.Theme.accentForeground; font.pixelSize: 11 }
                     MouseArea { id: shutdownMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.actionRequested("shutdown") }
                 }
             }

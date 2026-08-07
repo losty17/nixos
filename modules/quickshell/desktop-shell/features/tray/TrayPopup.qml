@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -28,16 +29,12 @@ PopupWindow {
     anchor.adjustment: PopupAdjustment.All
 
     onVisibleChanged: {
-        if (!visible && panelWindow && panelWindow.trayOpen)
-            panelWindow.trayOpen = false;
+        if (!visible && open)
+            root.closeRequested();
     }
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -51,7 +48,7 @@ PopupWindow {
 
                 Text {
                     text: "System tray"
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     font.bold: true
                     font.pixelSize: 16
                 }
@@ -65,16 +62,14 @@ PopupWindow {
                     id: itemCount
 
                     text: String(root.items.length)
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 11
                     verticalAlignment: Text.AlignVCenter
                 }
             }
 
-            Rectangle {
+            UI.Divider {
                 width: parent.width
-                height: 1
-                color: "#30323b"
             }
 
             Item {
@@ -101,7 +96,7 @@ PopupWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 7
-                                color: trayMouseArea.containsMouse ? "#392a48" : "transparent"
+                                color: trayMouseArea.containsMouse ? UI.Theme.strongHover : "transparent"
                             }
 
                             TrayItem {
@@ -122,7 +117,7 @@ PopupWindow {
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 3
                                 text: modelData ? (modelData.tooltipTitle || modelData.title || "Tray item") : "Tray item"
-                                color: "#c7cad4"
+                                color: UI.Theme.secondaryText
                                 elide: Text.ElideRight
                                 horizontalAlignment: Text.AlignHCenter
                                 font.pixelSize: 9
@@ -139,12 +134,10 @@ PopupWindow {
                     }
                 }
 
-                Text {
+                UI.EmptyState {
                     anchors.centerIn: parent
                     visible: root.items.length === 0
                     text: "No tray items"
-                    color: "#8f94a3"
-                    font.pixelSize: 12
                 }
             }
         }

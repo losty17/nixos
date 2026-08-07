@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -25,16 +26,12 @@ PopupWindow {
     anchor.adjustment: PopupAdjustment.All
 
     onVisibleChanged: {
-        if (!visible && panelWindow && panelWindow.bluetoothOpen)
-            panelWindow.bluetoothOpen = false;
+        if (!visible && open)
+            root.closeRequested();
     }
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -52,14 +49,14 @@ PopupWindow {
 
                     Text {
                         text: "Bluetooth"
-                        color: "#e6e8ee"
+                        color: UI.Theme.text
                         font.bold: true
                         font.pixelSize: 16
                     }
 
                     Text {
                         text: root.adapter ? root.adapter.name : "No adapter"
-                        color: "#8f94a3"
+                        color: UI.Theme.mutedText
                         font.pixelSize: 11
                     }
                 }
@@ -70,14 +67,14 @@ PopupWindow {
                 width: parent.width
                 height: 36
                 radius: 7
-                color: "#1c1d22"
+                color: UI.Theme.raised
 
                 Text {
                     anchors.left: parent.left
                     anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Bluetooth"
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     font.pixelSize: 13
                 }
 
@@ -86,7 +83,7 @@ PopupWindow {
                     anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.adapter && root.adapter.enabled ? "On" : "Off"
-                    color: root.adapter && root.adapter.enabled ? "#d8b8e3" : "#8f94a3"
+                    color: root.adapter && root.adapter.enabled ? UI.Theme.accentText : UI.Theme.mutedText
                     font.pixelSize: 12
                 }
 
@@ -98,10 +95,8 @@ PopupWindow {
                 }
             }
 
-            Rectangle {
+            UI.Divider {
                 width: parent.width
-                height: 1
-                color: "#30323b"
             }
 
             Row {
@@ -112,7 +107,7 @@ PopupWindow {
                     id: devicesTitle
 
                     text: "Connected devices"
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     font.bold: true
                     font.pixelSize: 13
                 }
@@ -126,7 +121,7 @@ PopupWindow {
                     id: scanningLabel
 
                     text: root.adapter && root.adapter.discovering ? "Scanning..." : ""
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 11
                 }
             }
@@ -154,19 +149,17 @@ PopupWindow {
                     }
                 }
 
-                Text {
+                UI.EmptyState {
                     anchors.centerIn: parent
                     visible: !root.adapter || root.adapter.devices.values.length === 0
                     text: root.adapter ? "No connected devices" : "No Bluetooth adapter"
-                    color: "#8f94a3"
-                    font.pixelSize: 12
                 }
             }
 
             Text {
                 width: parent.width
                 text: "Pairing and discovery are handled by BlueZ."
-                color: "#666b78"
+                color: UI.Theme.subduedText
                 elide: Text.ElideRight
                 font.pixelSize: 11
             }

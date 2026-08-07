@@ -1,4 +1,5 @@
 import QtQuick
+import "../components" as UI
 
 Item {
     id: root
@@ -12,21 +13,21 @@ Item {
         anchors.fill: parent
         spacing: 2
 
-        ConnectivityButton {
+        UI.IconButton {
             icon: "\uf04a"
             active: true
             disabled: !root.player || !root.player.canGoPrevious
             onClicked: if (root.player) root.player.previous()
         }
 
-        ConnectivityButton {
+        UI.IconButton {
             icon: root.player && root.player.isPlaying ? "\uf04c" : "\uf04b"
             active: true
             disabled: !root.player || !root.player.canTogglePlaying
             onClicked: if (root.player) root.player.togglePlaying()
         }
 
-        ConnectivityButton {
+        UI.IconButton {
             icon: "\uf04e"
             active: true
             disabled: !root.player || !root.player.canGoNext
@@ -41,7 +42,7 @@ Item {
             Text {
                 width: parent.width
                 text: root.player ? (root.player.trackTitle || root.player.identity || "Nothing playing") : ""
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 elide: Text.ElideRight
                 font.pixelSize: 11
                 font.weight: 600
@@ -50,7 +51,7 @@ Item {
             Text {
                 width: parent.width
                 text: root.player ? (root.player.trackArtist || root.player.identity || "") : ""
-                color: "#8f94a3"
+                color: UI.Theme.mutedText
                 elide: Text.ElideRight
                 font.pixelSize: 10
             }

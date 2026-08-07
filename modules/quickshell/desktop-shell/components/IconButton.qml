@@ -14,14 +14,14 @@ Rectangle {
     width: implicitWidth
     height: implicitHeight
     radius: 6
-    color: mouseArea.pressed ? "#774c81" : mouseArea.containsMouse ? "#392a48" : "transparent"
+    color: mouseArea.pressed ? Theme.accent : mouseArea.containsMouse ? Theme.strongHover : "transparent"
     opacity: disabled ? 0.45 : 1
 
     Text {
         anchors.centerIn: parent
         text: root.icon
-        color: root.active ? "#e6e8ee" : "#666666"
-        font.family: "Symbols Nerd Font"
+        color: root.active ? Theme.text : Theme.inactiveIcon
+        font.family: Theme.iconFont
         font.pixelSize: 16
     }
 

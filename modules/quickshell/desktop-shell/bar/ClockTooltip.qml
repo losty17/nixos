@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../components" as UI
 
 PopupWindow {
     id: root
@@ -18,17 +19,14 @@ PopupWindow {
     anchor.rect.y: root.targetItem ? root.targetItem.height + 4 : 0
     anchor.adjustment: PopupAdjustment.All
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 6
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
+        radius: UI.Theme.tooltipRadius
 
         Text {
             anchors.centerIn: parent
             text: root.clock ? Qt.formatTime(root.clock.date, "HH:mm:ss") : ""
-            color: "#e6e8ee"
+            color: UI.Theme.text
             font.pixelSize: 12
         }
     }

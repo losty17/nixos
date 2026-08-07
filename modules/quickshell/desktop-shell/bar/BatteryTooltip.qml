@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.UPower
+import "../components" as UI
 
 PopupWindow {
     id: root
@@ -19,12 +20,9 @@ PopupWindow {
     anchor.rect.y: root.targetItem ? root.targetItem.height + 4 : 0
     anchor.adjustment: PopupAdjustment.All
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 6
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
+        radius: UI.Theme.tooltipRadius
 
         Column {
             anchors.centerIn: parent
@@ -32,13 +30,13 @@ PopupWindow {
 
             Text {
                 text: root.battery ? "State: " + UPowerDeviceState.toString(root.battery.state) : "State: Unknown"
-                color: "#d8b8e3"
+                color: UI.Theme.accentText
                 font.pixelSize: 11
             }
 
             Text {
                 text: root.battery ? "Charge: " + Math.round(root.battery.percentage * 100) + "%" : "Charge: Unknown"
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 font.pixelSize: 12
             }
         }

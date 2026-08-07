@@ -1,4 +1,5 @@
 import QtQuick
+import "../../components" as UI
 
 Item {
     id: root
@@ -12,9 +13,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 7
-        color: mouseArea.containsMouse ? "#2a202f" : root.device && root.device.connected ? "#201d2a" : "#1c1d22"
+        color: mouseArea.containsMouse ? UI.Theme.hover : root.device && root.device.connected ? UI.Theme.selected : UI.Theme.raised
         border.width: root.device && root.device.connected ? 1 : 0
-        border.color: "#774c81"
+        border.color: UI.Theme.accent
     }
 
     Text {
@@ -22,8 +23,8 @@ Item {
         anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         text: "\uf294"
-        color: root.device && root.device.connected ? "#d8b8e3" : "#8f94a3"
-        font.family: "Symbols Nerd Font"
+        color: root.device && root.device.connected ? UI.Theme.accentText : UI.Theme.mutedText
+        font.family: UI.Theme.iconFont
         font.pixelSize: 15
     }
 
@@ -38,14 +39,14 @@ Item {
         Text {
             width: parent.width
             text: root.device ? root.device.name : ""
-            color: "#e6e8ee"
+            color: UI.Theme.text
             elide: Text.ElideRight
             font.pixelSize: 13
         }
 
         Text {
             text: root.device && root.device.connected ? "Connected" : "Paired device"
-            color: "#8f94a3"
+            color: UI.Theme.mutedText
             font.pixelSize: 11
         }
     }
@@ -57,7 +58,7 @@ Item {
         anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         text: root.device && root.device.batteryAvailable ? Math.round(root.device.battery * 100) + "%" : root.device && root.device.connected ? "On" : "Off"
-        color: "#8f94a3"
+        color: UI.Theme.mutedText
         font.pixelSize: 11
     }
 

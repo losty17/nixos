@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Pam
 import Quickshell.Wayland
+import "../../components" as UI
 
 Item {
     id: root
@@ -74,11 +75,11 @@ Item {
 
         surface: Component {
             WlSessionLockSurface {
-                color: "#0a0a0a"
+                color: UI.Theme.background
 
                 Rectangle {
                     anchors.fill: parent
-                    color: "#0a0a0a"
+                    color: UI.Theme.background
 
                     Column {
                         anchors.centerIn: parent
@@ -88,7 +89,7 @@ Item {
                         Text {
                             width: parent.width
                             text: "Session locked"
-                            color: "#e6e8ee"
+                            color: UI.Theme.text
                             horizontalAlignment: Text.AlignHCenter
                             font.bold: true
                             font.pixelSize: 28
@@ -97,7 +98,7 @@ Item {
                         Text {
                             width: parent.width
                             text: root.clock ? Qt.formatDateTime(root.clock.date, "dddd, MMMM d, yyyy | HH:mm:ss") : ""
-                            color: "#8f94a3"
+                            color: UI.Theme.mutedText
                             horizontalAlignment: Text.AlignHCenter
                             font.pixelSize: 13
                         }
@@ -106,9 +107,9 @@ Item {
                             width: parent.width
                             height: 42
                             radius: 8
-                            color: "#1c1d22"
+                            color: UI.Theme.raised
                             border.width: passwordInput.activeFocus ? 1 : 0
-                            border.color: "#774c81"
+                            border.color: UI.Theme.accent
 
                             TextInput {
                                 id: passwordInput
@@ -117,7 +118,7 @@ Item {
                                 anchors.leftMargin: 14
                                 anchors.rightMargin: 14
                                 verticalAlignment: TextInput.AlignVCenter
-                                color: "#e6e8ee"
+                                color: UI.Theme.text
                                 echoMode: TextInput.Password
                                 font.pixelSize: 13
                                 focus: true
@@ -131,7 +132,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     visible: passwordInput.text.length === 0
                                     text: "Password"
-                                    color: "#666b78"
+                                    color: UI.Theme.subduedText
                                     font.pixelSize: 13
                                 }
                             }
@@ -140,7 +141,7 @@ Item {
                         Text {
                             width: parent.width
                             text: root.errorMessage
-                            color: root.errorMessage === "Authenticating..." ? "#d8b8e3" : "#e06c75"
+                            color: root.errorMessage === "Authenticating..." ? UI.Theme.accentText : UI.Theme.danger
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
                             font.pixelSize: 11
@@ -149,7 +150,7 @@ Item {
                         Text {
                             width: parent.width
                             text: "Press Enter to unlock"
-                            color: "#666b78"
+                            color: UI.Theme.subduedText
                             horizontalAlignment: Text.AlignHCenter
                             font.pixelSize: 11
                         }

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Networking
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -32,8 +33,8 @@ PopupWindow {
         if (!visible) {
             if (wifiDevice)
                 wifiDevice.scannerEnabled = false;
-            if (panelWindow && panelWindow.wifiOpen)
-                panelWindow.wifiOpen = false;
+            if (open)
+                root.closeRequested();
             passwordPrompt = false;
             pendingNetwork = null;
             errorMessage = "";
@@ -85,14 +86,10 @@ PopupWindow {
         }
     }
 
-    Rectangle {
+    UI.PopupFrame {
         id: card
 
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -112,14 +109,14 @@ PopupWindow {
 
                     Text {
                         text: "Wi-Fi"
-                        color: "#e6e8ee"
+                        color: UI.Theme.text
                         font.bold: true
                         font.pixelSize: 16
                     }
 
                     Text {
                         text: root.wifiDevice ? root.wifiDevice.name : "No adapter"
-                        color: "#8f94a3"
+                        color: UI.Theme.mutedText
                         font.pixelSize: 11
                     }
                 }
@@ -129,7 +126,7 @@ PopupWindow {
                     height: 1
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: refreshButton
 
                     icon: "\uf021"
@@ -141,14 +138,14 @@ PopupWindow {
                 width: parent.width
                 height: 36
                 radius: 7
-                color: "#1c1d22"
+                color: UI.Theme.raised
 
                 Text {
                     anchors.left: parent.left
                     anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Wi-Fi"
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     font.pixelSize: 13
                 }
 
@@ -157,7 +154,7 @@ PopupWindow {
                     anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: Networking.wifiEnabled ? "On" : "Off"
-                    color: Networking.wifiEnabled ? "#d8b8e3" : "#8f94a3"
+                    color: Networking.wifiEnabled ? UI.Theme.accentText : UI.Theme.mutedText
                     font.pixelSize: 12
                 }
 
@@ -168,10 +165,8 @@ PopupWindow {
                 }
             }
 
-            Rectangle {
+            UI.Divider {
                 width: parent.width
-                height: 1
-                color: "#30323b"
             }
 
             Row {
@@ -182,7 +177,7 @@ PopupWindow {
                     id: nearbyTitle
 
                     text: "Nearby networks"
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     font.bold: true
                     font.pixelSize: 13
                 }
@@ -196,7 +191,7 @@ PopupWindow {
                     id: scanningLabel
 
                     text: root.wifiDevice && root.wifiDevice.scannerEnabled ? "Scanning..." : ""
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 11
                 }
             }
@@ -219,12 +214,10 @@ PopupWindow {
                     }
                 }
 
-                Text {
+                UI.EmptyState {
                     anchors.centerIn: parent
                     visible: !root.wifiDevice || root.wifiDevice.networks.values.length === 0
                     text: root.wifiDevice ? "No networks found" : "No Wi-Fi adapter"
-                    color: "#8f94a3"
-                    font.pixelSize: 12
                 }
             }
 
@@ -232,7 +225,7 @@ PopupWindow {
                 width: parent.width
                 visible: root.errorMessage.length > 0
                 text: root.errorMessage
-                color: root.errorMessage === "Connecting..." ? "#d8b8e3" : "#e06c75"
+                color: root.errorMessage === "Connecting..." ? UI.Theme.accentText : UI.Theme.danger
                 elide: Text.ElideRight
                 font.pixelSize: 11
             }
@@ -246,7 +239,7 @@ PopupWindow {
 
             Text {
                 text: "Connect to Wi-Fi"
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 font.bold: true
                 font.pixelSize: 16
             }
@@ -254,7 +247,7 @@ PopupWindow {
             Text {
                 width: parent.width
                 text: root.pendingNetwork ? root.pendingNetwork.name : ""
-                color: "#8f94a3"
+                color: UI.Theme.mutedText
                 elide: Text.ElideRight
                 font.pixelSize: 12
             }
@@ -263,9 +256,9 @@ PopupWindow {
                 width: parent.width
                 height: 40
                 radius: 7
-                color: "#1c1d22"
+                color: UI.Theme.raised
                 border.width: passwordInput.activeFocus ? 1 : 0
-                border.color: "#774c81"
+                border.color: UI.Theme.accent
 
                 TextInput {
                     id: passwordInput
@@ -274,7 +267,7 @@ PopupWindow {
                     anchors.leftMargin: 12
                     anchors.rightMargin: 12
                     verticalAlignment: TextInput.AlignVCenter
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     echoMode: TextInput.Password
                     font.pixelSize: 13
                     selectByMouse: true
@@ -286,7 +279,7 @@ PopupWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: passwordInput.text.length === 0
                         text: "Password"
-                        color: "#666b78"
+                        color: UI.Theme.subduedText
                         font.pixelSize: 13
                     }
                 }
@@ -296,7 +289,7 @@ PopupWindow {
                 width: parent.width
                 visible: root.errorMessage.length > 0 && root.errorMessage !== "Connecting..."
                 text: root.errorMessage
-                color: "#e06c75"
+                color: UI.Theme.danger
                 wrapMode: Text.WordWrap
                 font.pixelSize: 11
             }
@@ -317,12 +310,12 @@ PopupWindow {
                     width: 86
                     height: 36
                     radius: 7
-                    color: cancelMouse.containsMouse ? "#2a202f" : "#1c1d22"
+                    color: cancelMouse.containsMouse ? UI.Theme.hover : UI.Theme.raised
 
                     Text {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        color: "#e6e8ee"
+                        color: UI.Theme.text
                         font.pixelSize: 12
                     }
 
@@ -342,12 +335,12 @@ PopupWindow {
                     width: 86
                     height: 36
                     radius: 7
-                    color: connectMouse.containsMouse ? "#91609c" : "#774c81"
+                    color: connectMouse.containsMouse ? UI.Theme.accentHover : UI.Theme.accent
 
                     Text {
                         anchors.centerIn: parent
                         text: "Connect"
-                        color: "#ffffff"
+                        color: UI.Theme.accentForeground
                         font.bold: true
                         font.pixelSize: 12
                     }

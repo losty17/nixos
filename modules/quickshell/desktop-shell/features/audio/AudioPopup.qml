@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -60,16 +61,12 @@ PopupWindow {
     }
 
     onVisibleChanged: {
-        if (!visible && panelWindow && panelWindow.audioOpen)
-            panelWindow.audioOpen = false;
+        if (!visible && open)
+            root.closeRequested();
     }
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -86,14 +83,14 @@ PopupWindow {
 
                     Text {
                         text: "Audio"
-                        color: "#e6e8ee"
+                        color: UI.Theme.text
                         font.bold: true
                         font.pixelSize: 16
                     }
 
                     Text {
                         text: root.outputNode ? root.outputNode.description : "PipeWire"
-                        color: "#8f94a3"
+                        color: UI.Theme.mutedText
                         font.pixelSize: 11
                         elide: Text.ElideRight
                     }
@@ -104,7 +101,7 @@ PopupWindow {
                     height: 1
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: muteButton
 
                     icon: root.outputNode && root.outputNode.audio && root.outputNode.audio.muted ? "\uf026" : "\uf028"
@@ -116,7 +113,7 @@ PopupWindow {
 
             Text {
                 text: "Output devices"
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 font.bold: true
                 font.pixelSize: 12
             }
@@ -145,14 +142,14 @@ PopupWindow {
                     anchors.centerIn: parent
                     visible: root.nodesFor("sink").length === 0
                     text: "No output devices"
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 11
                 }
             }
 
             Text {
                 text: "Input devices"
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 font.bold: true
                 font.pixelSize: 12
             }
@@ -181,20 +178,18 @@ PopupWindow {
                     anchors.centerIn: parent
                     visible: root.nodesFor("source").length === 0
                     text: "No input devices"
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 11
                 }
             }
 
-            Rectangle {
+            UI.Divider {
                 width: parent.width
-                height: 1
-                color: "#30323b"
             }
 
             Text {
                 text: "Application streams"
-                color: "#e6e8ee"
+                color: UI.Theme.text
                 font.bold: true
                 font.pixelSize: 12
             }
@@ -221,7 +216,7 @@ PopupWindow {
                     anchors.centerIn: parent
                     visible: root.nodesFor("stream").length === 0
                     text: "No application streams"
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 11
                 }
             }

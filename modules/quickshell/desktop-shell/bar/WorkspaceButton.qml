@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import "../components" as UI
 
 Item {
     id: root
@@ -17,7 +18,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: root.workspace && root.workspace.focused ? "#774c81" : root.workspace && root.workspace.urgent ? "#900000" : "transparent"
+        color: root.workspace && root.workspace.focused ? UI.Theme.accent : root.workspace && root.workspace.urgent ? UI.Theme.urgent : "transparent"
     }
 
     Text {
@@ -27,8 +28,8 @@ Item {
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         text: root.workspace ? root.workspace.name : ""
-        color: root.workspace && (root.workspace.focused || root.workspace.urgent) ? "#ffffff" : "#666666"
-        font.family: "Inter"
+        color: root.workspace && (root.workspace.focused || root.workspace.urgent) ? UI.Theme.accentForeground : UI.Theme.subduedText
+        font.family: UI.Theme.textFont
         font.pixelSize: 14
         font.weight: 600
     }
@@ -75,7 +76,7 @@ Item {
                     anchors.centerIn: parent
                     visible: parent.children[0].source.length === 0
                     text: modelData && (modelData.appId || modelData.className) ? (modelData.appId || modelData.className).substring(0, 1).toUpperCase() : "?"
-                    color: "#8f94a3"
+                    color: UI.Theme.mutedText
                     font.pixelSize: 9
                     font.bold: true
                 }

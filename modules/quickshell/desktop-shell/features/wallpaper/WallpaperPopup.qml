@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -42,8 +43,8 @@ PopupWindow {
 
     onVisibleChanged: {
         if (!visible) {
-            if (panelWindow && panelWindow.wallpaperOpen)
-                panelWindow.wallpaperOpen = false;
+            if (open)
+                root.closeRequested();
         } else {
             root.loadWallpapers();
         }
@@ -84,12 +85,8 @@ PopupWindow {
         }
     }
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -105,14 +102,14 @@ PopupWindow {
 
                     Text {
                         text: "Wallpaper"
-                        color: "#e6e8ee"
+                        color: UI.Theme.text
                         font.bold: true
                         font.pixelSize: 16
                     }
 
                     Text {
                         text: root.wallpaperDirectory
-                        color: "#8f94a3"
+                        color: UI.Theme.mutedText
                         elide: Text.ElideMiddle
                         font.pixelSize: 10
                     }
@@ -123,7 +120,7 @@ PopupWindow {
                     height: 1
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: refreshButton
 
                     icon: "\uf021"
@@ -147,9 +144,9 @@ PopupWindow {
                         width: ListView.view ? ListView.view.width : 0
                         height: 42
                         radius: 7
-                        color: modelData === root.selectedPath ? "#201d2a" : mouseArea.containsMouse ? "#2a202f" : "#1c1d22"
+                        color: modelData === root.selectedPath ? UI.Theme.selected : mouseArea.containsMouse ? UI.Theme.hover : UI.Theme.raised
                         border.width: modelData === root.selectedPath ? 1 : 0
-                        border.color: "#774c81"
+                        border.color: UI.Theme.accent
 
                         Rectangle {
                             anchors.left: parent.left
@@ -158,7 +155,7 @@ PopupWindow {
                             width: 48
                             height: 30
                             radius: 5
-                            color: "#0f1014"
+                            color: UI.Theme.inset
 
                             Image {
                                 anchors.fill: parent
@@ -176,7 +173,7 @@ PopupWindow {
                             anchors.rightMargin: 12
                             anchors.verticalCenter: parent.verticalCenter
                             text: modelData.substring(modelData.lastIndexOf("/") + 1)
-                            color: "#e6e8ee"
+                            color: UI.Theme.text
                             elide: Text.ElideMiddle
                             font.pixelSize: 12
                         }
@@ -192,19 +189,17 @@ PopupWindow {
                     }
                 }
 
-                Text {
+                UI.EmptyState {
                     anchors.centerIn: parent
                     visible: root.wallpapers.length === 0
                     text: "No wallpapers found"
-                    color: "#8f94a3"
-                    font.pixelSize: 12
                 }
             }
 
             Text {
                 width: parent.width
                 text: "Add images to ~/Pictures/Wallpapers"
-                color: "#666b78"
+                color: UI.Theme.subduedText
                 font.pixelSize: 10
             }
         }

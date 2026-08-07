@@ -6,86 +6,28 @@ import Quickshell.Bluetooth
 import Quickshell.I3
 import Quickshell.Io
 import Quickshell.Networking
-import Quickshell.Services.Mpris
 import Quickshell.Services.Notifications
 import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
 import Quickshell.Services.UPower
 import Quickshell.Wayland
+import "bar" as Bar
+import "components" as UI
+import "features/audio" as Audio
+import "features/bluetooth" as BluetoothFeature
+import "features/calendar" as Calendar
+import "features/network" as Network
+import "features/notifications" as Notifications
+import "features/session" as Session
+import "features/tray" as Tray
+import "features/wallpaper" as Wallpaper
+import "services" as Services
 
 ShellRoot {
     id: shellRoot
 
-    property var workspaceApplications: ({})
-    property string weatherLocation: "Santa_Cruz_do_Sul"
-    property string weatherText: "Weather unavailable"
     property bool idleLockEnabled: true
     property int idleLockTimeout: 900
-    property var mediaPlayer: null
-
-    function refreshWeather() {
-        weatherProcess.exec(weatherCommand);
-    }
-
-    function chooseMediaPlayer() {
-        const players = Mpris.players && Mpris.players.values ? Mpris.players.values : [];
-        for (let i = 0; i < players.length; ++i) {
-            if (players[i].isPlaying)
-                return players[i];
-        }
-        return players.length > 0 ? players[0] : null;
-    }
-
-    function updateWorkspaceApplications(output) {
-        if (!output || output.trim().length === 0)
-            return;
-
-        try {
-            const tree = JSON.parse(output);
-            const next = ({});
-
-            function walk(node, workspaceName) {
-                if (!node)
-                    return;
-
-                let currentWorkspace = workspaceName;
-                if (node.type === "workspace") {
-                    currentWorkspace = node.name || workspaceName;
-                    if (currentWorkspace && !next[currentWorkspace])
-                        next[currentWorkspace] = [];
-                }
-
-                const nodes = (node.nodes || []).concat(node.floating_nodes || []);
-                const properties = node.window_properties || {};
-                const appId = node.app_id || "";
-                const className = properties.class || properties.instance || "";
-
-                if (currentWorkspace && node.type === "con" && (appId || className) && (nodes.length === 0 || node.pid)) {
-                    const key = String(node.id || appId || className);
-                    const existing = next[currentWorkspace];
-                    let duplicate = false;
-                    for (let i = 0; i < existing.length; ++i) {
-                        if (existing[i].key === key) {
-                            duplicate = true;
-                            break;
-                        }
-                    }
-                    if (!duplicate)
-                        existing.push({ key: key, appId: appId, className: className, title: node.name || "" });
-                }
-
-                for (let i = 0; i < nodes.length; ++i)
-                    walk(nodes[i], currentWorkspace);
-            }
-
-            walk(tree, "");
-            shellRoot.workspaceApplications = next;
-        } catch (error) {
-            // Sway can return a partial tree while it is reloading.
-        }
-    }
-
-    readonly property var weatherCommand: ["curl", "-fsSL", "--max-time", "8", "https://wttr.in/" + weatherLocation + "?format=%c|%t|%C"]
 
     SystemClock {
         id: systemClock
@@ -106,10 +48,22 @@ ShellRoot {
         }
     }
 
-    SessionLock {
+    Session.SessionLock {
         id: sessionLock
 
         clock: systemClock
+    }
+
+    Services.WorkspaceTracker {
+        id: workspaceTracker
+    }
+
+    Services.WeatherService {
+        id: weatherService
+    }
+
+    Services.MediaController {
+        id: mediaController
     }
 
     IdleMonitor {
@@ -129,62 +83,6 @@ ShellRoot {
         }
     }
 
-    Process {
-        id: workspaceTreeProcess
-
-        command: ["swaymsg", "-t", "get_tree", "-r"]
-        running: true
-
-        stdout: StdioCollector {
-            id: workspaceTreeOutput
-
-            onStreamFinished: shellRoot.updateWorkspaceApplications(workspaceTreeOutput.text)
-        }
-    }
-
-    Process {
-        id: weatherProcess
-
-        command: shellRoot.weatherCommand
-        running: true
-
-        stdout: StdioCollector {
-            id: weatherOutput
-
-            onStreamFinished: {
-                const output = weatherOutput.text.trim();
-                if (output.length > 0)
-                    shellRoot.weatherText = output;
-            }
-        }
-    }
-
-    Timer {
-        interval: 2000
-        repeat: true
-        running: true
-        onTriggered: workspaceTreeProcess.exec(workspaceTreeProcess.command)
-    }
-
-    Timer {
-        interval: 900000
-        repeat: true
-        running: true
-        onTriggered: shellRoot.refreshWeather()
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        onTriggered: shellRoot.mediaPlayer = shellRoot.chooseMediaPlayer()
-    }
-
-    Component.onCompleted: {
-        shellRoot.mediaPlayer = shellRoot.chooseMediaPlayer();
-        shellRoot.refreshWeather();
-    }
-
     Variants {
         model: Quickshell.screens
 
@@ -192,14 +90,7 @@ ShellRoot {
             id: panel
 
             property var modelData
-            property bool wifiOpen: false
-            property bool bluetoothOpen: false
-            property bool audioOpen: false
-            property bool calendarOpen: false
-            property bool notificationsOpen: false
-            property bool wallpaperOpen: false
-            property bool sessionOpen: false
-            property bool trayOpen: false
+            property string activePopup: ""
             property var audioSink: Pipewire.defaultAudioSink
             property var audioSource: Pipewire.defaultAudioSource
             property var battery: UPower.displayDevice
@@ -215,6 +106,10 @@ ShellRoot {
                 return null;
             }
             property var bluetoothAdapter: Bluetooth.defaultAdapter
+
+            function togglePopup(name) {
+                panel.activePopup = panel.activePopup === name ? "" : name;
+            }
 
             screen: modelData
             anchors {
@@ -233,7 +128,7 @@ ShellRoot {
 
             Rectangle {
                 anchors.fill: parent
-                color: "#0a0a0a"
+                color: UI.Theme.background
             }
 
             Row {
@@ -246,11 +141,11 @@ ShellRoot {
                 Repeater {
                     model: I3.workspaces
 
-                    delegate: WorkspaceButton {
+                    delegate: Bar.WorkspaceButton {
                         required property var modelData
 
                         workspace: modelData
-                        applications: shellRoot.workspaceApplications && shellRoot.workspaceApplications[modelData.name] ? shellRoot.workspaceApplications[modelData.name] : []
+                        applications: workspaceTracker.applications && workspaceTracker.applications[modelData.name] ? workspaceTracker.applications[modelData.name] : []
                         screenName: panel.modelData ? panel.modelData.name : ""
                     }
                 }
@@ -264,11 +159,11 @@ ShellRoot {
                 anchors.verticalCenter: parent.verticalCenter
                 height: parent.height
 
-                MediaWidget {
+                Bar.MediaWidget {
                     id: mediaWidget
 
                     anchors.centerIn: parent
-                    player: shellRoot.mediaPlayer
+                    player: mediaController.player
                 }
 
                 Text {
@@ -279,9 +174,9 @@ ShellRoot {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     text: ToplevelManager.activeToplevel ? ToplevelManager.activeToplevel.title : ""
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     elide: Text.ElideRight
-                    font.family: "Inter"
+                    font.family: UI.Theme.textFont
                     font.pixelSize: 14
                     font.weight: 600
                 }
@@ -295,22 +190,13 @@ ShellRoot {
                 height: parent.height
                 spacing: 0
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: trayButton
 
                     visible: panel.trayCount > 0
                     icon: "\uf078"
-                    active: panel.trayOpen
-                    onClicked: {
-                        panel.wifiOpen = false;
-                        panel.bluetoothOpen = false;
-                        panel.audioOpen = false;
-                        panel.calendarOpen = false;
-                        panel.notificationsOpen = false;
-                        panel.wallpaperOpen = false;
-                        panel.sessionOpen = false;
-                        panel.trayOpen = !panel.trayOpen;
-                    }
+                    active: panel.activePopup === "tray"
+                    onClicked: panel.togglePopup("tray")
                 }
 
                 Item {
@@ -325,8 +211,8 @@ ShellRoot {
                         anchors.leftMargin: 5
                         anchors.verticalCenter: parent.verticalCenter
                         text: panel.battery && (panel.battery.state === UPowerDeviceState.Charging || panel.battery.state === UPowerDeviceState.PendingCharge) ? "\uf0e7" : panel.battery && panel.battery.state === UPowerDeviceState.FullyCharged ? "\uf240" : ["\uf244", "\uf243", "\uf242", "\uf241", "\uf240"][Math.min(4, Math.max(0, Math.floor(panel.battery.percentage * 5)))]
-                        color: panel.battery && panel.battery.state === UPowerDeviceState.Charging ? "#d8b8e3" : panel.battery && panel.battery.percentage <= 0.15 ? "#e06c75" : panel.battery && panel.battery.percentage <= 0.3 ? "#e5c07b" : "#e6e8ee"
-                        font.family: "Symbols Nerd Font"
+                        color: panel.battery && panel.battery.state === UPowerDeviceState.Charging ? UI.Theme.accentText : panel.battery && panel.battery.percentage <= 0.15 ? UI.Theme.danger : panel.battery && panel.battery.percentage <= 0.3 ? UI.Theme.warning : UI.Theme.text
+                        font.family: UI.Theme.iconFont
                         font.pixelSize: 16
                     }
 
@@ -352,8 +238,8 @@ ShellRoot {
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
                         text: Qt.formatTime(systemClock.date, "HH:mm")
-                        color: "#e6e8ee"
-                        font.family: "Inter"
+                        color: UI.Theme.text
+                        font.family: UI.Theme.textFont
                         font.pixelSize: 14
                         font.weight: 600
                     }
@@ -364,37 +250,19 @@ ShellRoot {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            panel.wifiOpen = false;
-                            panel.bluetoothOpen = false;
-                            panel.audioOpen = false;
-                            panel.notificationsOpen = false;
-                            panel.wallpaperOpen = false;
-                            panel.sessionOpen = false;
-                            panel.trayOpen = false;
-                            panel.calendarOpen = !panel.calendarOpen;
-                        }
+                        onClicked: panel.togglePopup("calendar")
                     }
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: notificationButton
 
                     icon: panel.notificationCount > 0 ? "\uf0f3" : "\uf1f6"
                     active: panel.notificationCount > 0
-                    onClicked: {
-                        panel.wifiOpen = false;
-                        panel.bluetoothOpen = false;
-                        panel.audioOpen = false;
-                        panel.calendarOpen = false;
-                        panel.wallpaperOpen = false;
-                        panel.sessionOpen = false;
-                        panel.trayOpen = false;
-                        panel.notificationsOpen = !panel.notificationsOpen;
-                    }
+                    onClicked: panel.togglePopup("notifications")
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: volumeButton
 
                     icon: {
@@ -408,145 +276,100 @@ ShellRoot {
                     }
                     active: panel.audioSink && panel.audioSink.audio && !panel.audioSink.audio.muted
                     disabled: !panel.audioSink || !panel.audioSink.audio
-                    onClicked: {
-                        panel.wifiOpen = false;
-                        panel.bluetoothOpen = false;
-                        panel.calendarOpen = false;
-                        panel.notificationsOpen = false;
-                        panel.wallpaperOpen = false;
-                        panel.sessionOpen = false;
-                        panel.trayOpen = false;
-                        panel.audioOpen = !panel.audioOpen;
-                    }
+                    onClicked: panel.togglePopup("audio")
                     onScrolled: function(value) {
                         if (panel.audioSink && panel.audioSink.audio)
                             panel.audioSink.audio.volume = Math.max(0, Math.min(1, panel.audioSink.audio.volume + (value > 0 ? 0.05 : -0.05)));
                     }
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: wifiButton
 
                     icon: "\uf1eb"
                     active: Networking.wifiEnabled && panel.wifiDevice && panel.wifiDevice.connected
-                    onClicked: {
-                        panel.bluetoothOpen = false;
-                        panel.audioOpen = false;
-                        panel.calendarOpen = false;
-                        panel.notificationsOpen = false;
-                        panel.wallpaperOpen = false;
-                        panel.sessionOpen = false;
-                        panel.trayOpen = false;
-                        panel.wifiOpen = !panel.wifiOpen;
-                    }
+                    onClicked: panel.togglePopup("wifi")
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: bluetoothButton
 
                     icon: "\uf294"
                     active: panel.bluetoothAdapter && panel.bluetoothAdapter.enabled
-                    onClicked: {
-                        panel.wifiOpen = false;
-                        panel.audioOpen = false;
-                        panel.calendarOpen = false;
-                        panel.notificationsOpen = false;
-                        panel.wallpaperOpen = false;
-                        panel.sessionOpen = false;
-                        panel.trayOpen = false;
-                        panel.bluetoothOpen = !panel.bluetoothOpen;
-                    }
+                    onClicked: panel.togglePopup("bluetooth")
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: wallpaperButton
 
                     icon: "\uf03e"
-                    active: panel.wallpaperOpen
-                    onClicked: {
-                        panel.wifiOpen = false;
-                        panel.bluetoothOpen = false;
-                        panel.audioOpen = false;
-                        panel.calendarOpen = false;
-                        panel.notificationsOpen = false;
-                        panel.sessionOpen = false;
-                        panel.trayOpen = false;
-                        panel.wallpaperOpen = !panel.wallpaperOpen;
-                    }
+                    active: panel.activePopup === "wallpaper"
+                    onClicked: panel.togglePopup("wallpaper")
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: sessionButton
 
                     icon: "\uf011"
-                    active: panel.sessionOpen
-                    onClicked: {
-                        panel.wifiOpen = false;
-                        panel.bluetoothOpen = false;
-                        panel.audioOpen = false;
-                        panel.calendarOpen = false;
-                        panel.notificationsOpen = false;
-                        panel.wallpaperOpen = false;
-                        panel.trayOpen = false;
-                        panel.sessionOpen = !panel.sessionOpen;
-                    }
+                    active: panel.activePopup === "session"
+                    onClicked: panel.togglePopup("session")
                 }
             }
 
-            BatteryTooltip {
+            Bar.BatteryTooltip {
                 targetItem: batteryItem
                 battery: panel.battery
                 open: batteryMouseArea.containsMouse
             }
 
-            ClockTooltip {
+            Bar.ClockTooltip {
                 targetItem: clockItem
                 clock: systemClock
                 open: clockMouseArea.containsMouse
             }
 
-            AudioPopup {
+            Audio.AudioPopup {
                 panelWindow: panel
                 outputNode: panel.audioSink
                 inputNode: panel.audioSource
-                open: panel.audioOpen
-                onCloseRequested: panel.audioOpen = false
+                open: panel.activePopup === "audio"
+                onCloseRequested: panel.activePopup = ""
             }
 
-            CalendarPopup {
+            Calendar.CalendarPopup {
                 panelWindow: panel
                 clock: systemClock
-                weatherLocation: shellRoot.weatherLocation.replace("_", " ")
-                weatherText: shellRoot.weatherText
-                open: panel.calendarOpen
-                onRefreshWeatherRequested: shellRoot.refreshWeather()
-                onCloseRequested: panel.calendarOpen = false
+                weatherLocation: weatherService.location.replace(/_/g, " ")
+                weatherText: weatherService.text
+                open: panel.activePopup === "calendar"
+                onRefreshWeatherRequested: weatherService.refresh()
+                onCloseRequested: panel.activePopup = ""
             }
 
-            NotificationsPopup {
+            Notifications.NotificationsPopup {
                 panelWindow: panel
                 server: notificationServer
-                open: panel.notificationsOpen
-                onCloseRequested: panel.notificationsOpen = false
+                open: panel.activePopup === "notifications"
+                onCloseRequested: panel.activePopup = ""
             }
 
-            WallpaperPopup {
+            Wallpaper.WallpaperPopup {
                 panelWindow: panel
-                open: panel.wallpaperOpen
-                onCloseRequested: panel.wallpaperOpen = false
+                open: panel.activePopup === "wallpaper"
+                onCloseRequested: panel.activePopup = ""
             }
 
-            SessionMenu {
+            Session.SessionMenu {
                 panelWindow: panel
                 idleLockEnabled: shellRoot.idleLockEnabled
-                open: panel.sessionOpen
+                open: panel.activePopup === "session"
                 onLockRequested: {
-                    panel.sessionOpen = false;
+                    panel.activePopup = "";
                     sessionLock.requestLock();
                 }
                 onToggleIdleRequested: shellRoot.idleLockEnabled = !shellRoot.idleLockEnabled
                 onActionRequested: function(action) {
-                    panel.sessionOpen = false;
+                    panel.activePopup = "";
                     if (action === "logout")
                         Quickshell.execDetached(["swaymsg", "exit"]);
                     else if (action === "suspend")
@@ -556,27 +379,27 @@ ShellRoot {
                     else if (action === "shutdown")
                         Quickshell.execDetached(["systemctl", "poweroff"]);
                 }
-                onCloseRequested: panel.sessionOpen = false
+                onCloseRequested: panel.activePopup = ""
             }
 
-            TrayPopup {
+            Tray.TrayPopup {
                 panelWindow: panel
-                open: panel.trayOpen
-                onCloseRequested: panel.trayOpen = false
+                open: panel.activePopup === "tray"
+                onCloseRequested: panel.activePopup = ""
             }
 
-            WifiPopup {
+            Network.WifiPopup {
                 panelWindow: panel
                 wifiDevice: panel.wifiDevice
-                open: panel.wifiOpen
-                onCloseRequested: panel.wifiOpen = false
+                open: panel.activePopup === "wifi"
+                onCloseRequested: panel.activePopup = ""
             }
 
-            BluetoothPopup {
+            BluetoothFeature.BluetoothPopup {
                 panelWindow: panel
                 adapter: panel.bluetoothAdapter
-                open: panel.bluetoothOpen
-                onCloseRequested: panel.bluetoothOpen = false
+                open: panel.activePopup === "bluetooth"
+                onCloseRequested: panel.activePopup = ""
             }
         }
     }

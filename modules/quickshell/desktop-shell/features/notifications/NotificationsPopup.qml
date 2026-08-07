@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import "../../components" as UI
 
 PopupWindow {
     id: root
@@ -33,16 +34,12 @@ PopupWindow {
     }
 
     onVisibleChanged: {
-        if (!visible && panelWindow && panelWindow.notificationsOpen)
-            panelWindow.notificationsOpen = false;
+        if (!visible && open)
+            root.closeRequested();
     }
 
-    Rectangle {
+    UI.PopupFrame {
         anchors.fill: parent
-        radius: 10
-        color: "#14151a"
-        border.width: 1
-        border.color: "#30323b"
 
         Column {
             anchors.fill: parent
@@ -55,7 +52,7 @@ PopupWindow {
 
                 Text {
                     text: "Notifications"
-                    color: "#e6e8ee"
+                    color: UI.Theme.text
                     font.bold: true
                     font.pixelSize: 16
                 }
@@ -65,7 +62,7 @@ PopupWindow {
                     height: 1
                 }
 
-                ConnectivityButton {
+                UI.IconButton {
                     id: clearButton
 
                     icon: "\uf1f8"
@@ -73,10 +70,8 @@ PopupWindow {
                 }
             }
 
-            Rectangle {
+            UI.Divider {
                 width: parent.width
-                height: 1
-                color: "#30323b"
             }
 
             Item {
@@ -96,12 +91,10 @@ PopupWindow {
                     }
                 }
 
-                Text {
+                UI.EmptyState {
                     anchors.centerIn: parent
                     visible: !root.server || !root.server.trackedNotifications || root.server.trackedNotifications.values.length === 0
                     text: "No notifications"
-                    color: "#8f94a3"
-                    font.pixelSize: 12
                 }
             }
         }

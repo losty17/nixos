@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import "../../components" as UI
 
 Item {
     id: root
@@ -32,7 +33,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 6
-        color: mouseArea.containsMouse ? "#392a48" : "transparent"
+        color: mouseArea.containsMouse ? UI.Theme.strongHover : "transparent"
     }
 
     IconImage {
