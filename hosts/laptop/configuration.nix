@@ -110,7 +110,17 @@ in
   security.pam.services.login.enableGnomeKeyring = true;
   programs.seahorse.enable = true;
   services.flatpak.enable = true;
-  xdg.portal.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-wlr
+    ];
+    config.sway = {
+      default = [ "wlr" "gtk" ];
+      "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+    };
+  };
 
   services.tailscale = {
     enable = true;

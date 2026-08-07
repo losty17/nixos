@@ -60,7 +60,7 @@
 
   services.resolved = {
     enable = true;
-    fallbackDns = [ "1.1.1.1" "8.8.8.8" ];
+    settings.Resolve.FallbackDNS = [ "1.1.1.1" "8.8.8.8" ];
   };
 
   hardware.graphics = {
@@ -79,10 +79,10 @@
     enable = true;
     videoDrivers = [ "nvidia" ];
 
-    displayManager.sddm.enable = true;
-
     windowManager.i3.enable = true;
   };
+
+  services.displayManager.sddm.enable = true;
 
   services.gvfs.enable = true;
   services.tumbler.enable = true;
@@ -90,7 +90,14 @@
   security.pam.services.login.enableGnomeKeyring = true;
   programs.seahorse.enable = true;
   services.flatpak.enable = true;
-  xdg.portal.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common = {
+      default = [ "gtk" ];
+      "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+    };
+  };
 
   services.tailscale = {
     enable = true;

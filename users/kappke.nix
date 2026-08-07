@@ -112,51 +112,63 @@
 
   services.kanshi = {
     enable = true;
-    profiles = {
-      undocked = {
-        outputs = [
-          {
-            criteria = "eDP-1";
-            mode = "1920x1080@60.008Hz";
-          }
-        ];
-      };
-      office = {
-        outputs = [
-          {
-            criteria = "eDP-1";
-            status = "disable";
-          }
-          {
-            criteria = "Samsung Electric Company LF24T35 HX5XA07221";
-            mode = "1920x1080@74.973Hz";
-          }
-        ];
-      };
-      office_alternate = {
-        outputs = [
-          {
-            criteria = "eDP-1";
-            status = "disable";
-          }
-          {
-            criteria = "Samsung Electric Company LF24T35 HX5X609064";
-            mode = "1920x1080@74.973Hz";
-          }
-        ];
-      };
-      home = {
-        outputs = [
-          {
-            criteria = "eDP-1";
-            mode = "1920x1080@60.008Hz";
-          }
-          {
-            criteria = "LG Electronics LG ULTRAWIDE 0x01010101";
-            mode = "2560x1080@74.991Hz";
-          }
-        ];
-      };
-    };
+    settings = [
+      {
+        profile = {
+          name = "undocked";
+          outputs = [
+            {
+              criteria = "eDP-1";
+              mode = "1920x1080@60.008Hz";
+            }
+          ];
+        };
+      }
+      {
+        profile = {
+          name = "office";
+          outputs = [
+            {
+              criteria = "eDP-1";
+              status = "disable";
+            }
+            {
+              criteria = "Samsung Electric Company LF24T35 HX5XA07221";
+              mode = "1920x1080@74.973Hz";
+            }
+          ];
+        };
+      }
+      {
+        profile = {
+          name = "office_alternate";
+          outputs = [
+            {
+              criteria = "eDP-1";
+              status = "disable";
+            }
+            {
+              criteria = "Samsung Electric Company LF24T35 HX5X609064";
+              mode = "1920x1080@74.973Hz";
+            }
+          ];
+        };
+      }
+      {
+        profile = {
+          name = "home";
+          outputs = [
+            {
+              criteria = "eDP-1";
+              mode = "1920x1080@60.008Hz";
+            }
+            {
+              criteria = "LG Electronics LG ULTRAWIDE 0x01010101";
+              mode = "2560x1080@74.991Hz";
+            }
+          ];
+        };
+      }
+    ];
   };
 }
