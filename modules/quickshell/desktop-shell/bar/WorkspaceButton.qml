@@ -1,19 +1,18 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Widgets
 import "../components" as UI
 
 Item {
     id: root
 
-    required property var workspace
-    property string screenName: ""
+    property var workspace: null
+    required property string workspaceName
     property var applications: []
-    readonly property bool onScreen: root.workspace && root.workspace.monitor && root.workspace.monitor.name === root.screenName
 
-    visible: onScreen
     implicitWidth: label.implicitWidth + appIcons.width + 24
-    width: visible ? implicitWidth : 0
+    width: implicitWidth
     height: 28
 
     Rectangle {
@@ -27,7 +26,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        text: root.workspace ? root.workspace.name : ""
+        text: root.workspaceName
         color: root.workspace && (root.workspace.focused || root.workspace.urgent) ? UI.Theme.accentForeground : UI.Theme.subduedText
         font.family: UI.Theme.textFont
         font.pixelSize: 14
@@ -86,8 +85,16 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        enabled: root.onScreen
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.workspace.activate()
+        onClicked: {
+            if (root.workspace)
+                root.workspace.activate();
+            else
+                activateProcess.exec(["swaymsg", "workspace", "number", root.workspaceName]);
+        }
+    }
+
+    Process {
+        id: activateProcess
     }
 }

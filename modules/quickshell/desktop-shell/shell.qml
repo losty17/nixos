@@ -30,6 +30,23 @@ ShellRoot {
     property bool idleLockEnabled: true
     property int idleLockTimeout: 300
     property var incomingNotifications: []
+    readonly property var persistentWorkspaces: [
+        { "name": "1" },
+        { "name": "2" },
+        { "name": "3" },
+        { "name": "4" },
+        { "name": "5" },
+        { "name": "6" }
+    ]
+
+    function workspaceByName(name) {
+        const workspaces = I3.workspaces.values;
+        for (let i = 0; i < workspaces.length; ++i) {
+            if (workspaces[i].name === name)
+                return workspaces[i];
+        }
+        return null;
+    }
 
     function showIncomingNotification(notification) {
         const appName = notification.appName || "";
@@ -221,14 +238,14 @@ ShellRoot {
                 height: parent.height
 
                 Repeater {
-                    model: I3.workspaces
+                    model: shellRoot.persistentWorkspaces
 
                     delegate: Bar.WorkspaceButton {
                         required property var modelData
 
-                        workspace: modelData
-                        applications: workspaceTracker.applications && workspaceTracker.applications[modelData.name] ? workspaceTracker.applications[modelData.name] : []
-                        screenName: panel.modelData ? panel.modelData.name : ""
+                        workspace: shellRoot.workspaceByName(modelData.name)
+                        workspaceName: modelData.name
+                        applications: workspaceTracker.applications && workspaceTracker.applications[workspaceName] ? workspaceTracker.applications[workspaceName] : []
                     }
                 }
             }
