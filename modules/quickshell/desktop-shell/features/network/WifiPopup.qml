@@ -90,6 +90,7 @@ PopupWindow {
         id: card
 
         anchors.fill: parent
+        shown: root.open
 
         Column {
             anchors.fill: parent

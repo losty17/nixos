@@ -33,6 +33,7 @@ PopupWindow {
 
     UI.PopupFrame {
         anchors.fill: parent
+        shown: root.open
 
         Column {
             anchors.fill: parent

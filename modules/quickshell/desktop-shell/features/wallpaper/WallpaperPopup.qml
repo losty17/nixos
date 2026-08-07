@@ -87,6 +87,8 @@ PopupWindow {
 
     UI.PopupFrame {
         anchors.fill: parent
+        shown: root.open
+        animationOrigin: Item.TopLeft
 
         Column {
             anchors.fill: parent

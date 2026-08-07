@@ -32,4 +32,6 @@ QtObject {
     readonly property int tooltipRadius: 6
     readonly property int controlRadius: 7
     readonly property int popupMargin: 16
+    readonly property int animationFast: 100
+    readonly property int animationNormal: 180
 }

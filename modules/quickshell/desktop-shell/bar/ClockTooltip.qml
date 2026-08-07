@@ -22,6 +22,7 @@ PopupWindow {
     UI.PopupFrame {
         anchors.fill: parent
         radius: UI.Theme.tooltipRadius
+        shown: root.open
 
         Text {
             anchors.centerIn: parent

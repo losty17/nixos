@@ -18,6 +18,10 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: root.workspace && root.workspace.focused ? UI.Theme.accent : root.workspace && root.workspace.urgent ? UI.Theme.urgent : "transparent"
+
+        Behavior on color {
+            ColorAnimation { duration: UI.Theme.animationNormal }
+        }
     }
 
     Text {
@@ -31,6 +35,10 @@ Item {
         font.family: UI.Theme.textFont
         font.pixelSize: 14
         font.weight: 600
+
+        Behavior on color {
+            ColorAnimation { duration: UI.Theme.animationNormal }
+        }
     }
 
     Row {

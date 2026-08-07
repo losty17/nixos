@@ -45,9 +45,12 @@ PopupWindow {
                 id: notificationFrame
 
                 required property var modelData
+                shown: false
 
                 width: root.width
                 height: root.notificationHeight
+
+                Component.onCompleted: shown = true
 
                 Timer {
                     interval: Math.max(1, notificationFrame.modelData.expiresAt - Date.now())

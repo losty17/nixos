@@ -16,6 +16,18 @@ Item {
         anchors.fill: parent
         radius: UI.Theme.controlRadius
         color: mouseArea.pressed ? UI.Theme.accent : mouseArea.containsMouse || root.active ? UI.Theme.strongHover : "transparent"
+        scale: mouseArea.pressed ? 0.98 : 1
+
+        Behavior on color {
+            ColorAnimation { duration: UI.Theme.animationFast }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: UI.Theme.animationFast
+                easing.type: Easing.OutCubic
+            }
+        }
 
         Row {
             anchors.fill: parent
