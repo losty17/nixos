@@ -16,6 +16,7 @@ import "components" as UI
 import "features/audio" as Audio
 import "features/bluetooth" as BluetoothFeature
 import "features/calendar" as Calendar
+import "features/media" as Media
 import "features/network" as Network
 import "features/notifications" as Notifications
 import "features/session" as Session
@@ -28,6 +29,26 @@ ShellRoot {
 
     property bool idleLockEnabled: true
     property int idleLockTimeout: 900
+    property var incomingNotifications: []
+
+    function showIncomingNotification(notification) {
+        const appName = notification.appName || "";
+        const pending = shellRoot.incomingNotifications.filter(function(entry) {
+            return entry.appName !== appName;
+        });
+        pending.push({
+            "notification": notification,
+            "appName": appName,
+            "expiresAt": Date.now() + 3000
+        });
+        shellRoot.incomingNotifications = pending.slice(-3);
+    }
+
+    function dismissIncomingNotification(notification) {
+        shellRoot.incomingNotifications = shellRoot.incomingNotifications.filter(function(entry) {
+            return entry.notification !== notification;
+        });
+    }
 
     SystemClock {
         id: systemClock
@@ -45,6 +66,7 @@ ShellRoot {
 
         onNotification: function(notification) {
             notification.tracked = true;
+            shellRoot.showIncomingNotification(notification);
         }
     }
 
@@ -91,6 +113,7 @@ ShellRoot {
 
             property var modelData
             property string activePopup: ""
+            property string pendingPopup: ""
             property var audioSink: Pipewire.defaultAudioSink
             property var audioSource: Pipewire.defaultAudioSource
             property var battery: UPower.displayDevice
@@ -108,7 +131,21 @@ ShellRoot {
             property var bluetoothAdapter: Bluetooth.defaultAdapter
 
             function togglePopup(name) {
-                panel.activePopup = panel.activePopup === name ? "" : name;
+                if (panel.activePopup === name || (panel.activePopup === "" && panel.pendingPopup === name)) {
+                    panel.closePopup();
+                } else if (panel.activePopup !== "" || panel.pendingPopup !== "") {
+                    panel.pendingPopup = name;
+                    panel.activePopup = "";
+                    popupTransitionTimer.restart();
+                } else {
+                    panel.activePopup = name;
+                }
+            }
+
+            function closePopup() {
+                popupTransitionTimer.stop();
+                panel.pendingPopup = "";
+                panel.activePopup = "";
             }
 
             screen: modelData
@@ -126,15 +163,60 @@ ShellRoot {
                 objects: Pipewire.nodes && Pipewire.nodes.values ? Pipewire.nodes.values : []
             }
 
+            // Wayland requires the previous grabbing popup to be destroyed before
+            // another panel-owned popup can become the active transient.
+            Timer {
+                id: popupTransitionTimer
+
+                interval: 50
+                onTriggered: {
+                    panel.activePopup = panel.pendingPopup;
+                    panel.pendingPopup = "";
+                }
+            }
+
             Rectangle {
                 anchors.fill: parent
                 color: UI.Theme.background
             }
 
             Row {
-                id: workspaceContent
+                id: leftContent
 
                 anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                height: parent.height
+                spacing: 0
+
+                UI.IconButton {
+                    id: sessionButton
+
+                    icon: "\uf011"
+                    active: panel.activePopup === "session"
+                    onClicked: panel.togglePopup("session")
+                }
+
+                UI.IconButton {
+                    id: wallpaperButton
+
+                    icon: "\uf03e"
+                    active: panel.activePopup === "wallpaper"
+                    onClicked: panel.togglePopup("wallpaper")
+                }
+
+                Bar.MediaWidget {
+                    id: mediaWidget
+
+                    player: mediaController.player
+                    active: panel.activePopup === "media"
+                    onClicked: panel.togglePopup("media")
+                }
+            }
+
+            Row {
+                id: workspaceContent
+
+                anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 height: parent.height
 
@@ -148,37 +230,6 @@ ShellRoot {
                         applications: workspaceTracker.applications && workspaceTracker.applications[modelData.name] ? workspaceTracker.applications[modelData.name] : []
                         screenName: panel.modelData ? panel.modelData.name : ""
                     }
-                }
-            }
-
-            Item {
-                id: centerContent
-
-                anchors.left: workspaceContent.right
-                anchors.right: statusContent.left
-                anchors.verticalCenter: parent.verticalCenter
-                height: parent.height
-
-                Bar.MediaWidget {
-                    id: mediaWidget
-
-                    anchors.centerIn: parent
-                    player: mediaController.player
-                }
-
-                Text {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    visible: !mediaWidget.visible
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: ToplevelManager.activeToplevel ? ToplevelManager.activeToplevel.title : ""
-                    color: UI.Theme.text
-                    elide: Text.ElideRight
-                    font.family: UI.Theme.textFont
-                    font.pixelSize: 14
-                    font.weight: 600
                 }
             }
 
@@ -197,6 +248,43 @@ ShellRoot {
                     icon: "\uf078"
                     active: panel.activePopup === "tray"
                     onClicked: panel.togglePopup("tray")
+                }
+
+                UI.IconButton {
+                    id: volumeButton
+
+                    icon: {
+                        if (!panel.audioSink || !panel.audioSink.audio)
+                            return "\uf026"; // volume muted
+                        if (panel.audioSink.audio.muted || panel.audioSink.audio.volume <= 0)
+                            return "\uf026"; // volume muted
+                        if (panel.audioSink.audio.volume < 0.5)
+                            return "\uf027"; // volume medium
+                        return "\uf028"; // volume full
+                    }
+                    active: panel.audioSink && panel.audioSink.audio && !panel.audioSink.audio.muted
+                    disabled: !panel.audioSink || !panel.audioSink.audio
+                    onClicked: panel.togglePopup("audio")
+                    onScrolled: function(value) {
+                        if (panel.audioSink && panel.audioSink.audio)
+                            panel.audioSink.audio.volume = Math.max(0, Math.min(1, panel.audioSink.audio.volume + (value > 0 ? 0.05 : -0.05)));
+                    }
+                }
+
+                UI.IconButton {
+                    id: bluetoothButton
+
+                    icon: "\uf294"
+                    active: panel.bluetoothAdapter && panel.bluetoothAdapter.enabled
+                    onClicked: panel.togglePopup("bluetooth")
+                }
+
+                UI.IconButton {
+                    id: wifiButton
+
+                    icon: "\uf1eb"
+                    active: Networking.wifiEnabled && panel.wifiDevice && panel.wifiDevice.connected
+                    onClicked: panel.togglePopup("wifi")
                 }
 
                 Item {
@@ -262,114 +350,78 @@ ShellRoot {
                     onClicked: panel.togglePopup("notifications")
                 }
 
-                UI.IconButton {
-                    id: volumeButton
-
-                    icon: {
-                        if (!panel.audioSink || !panel.audioSink.audio)
-                            return "\uf026"; // volume muted
-                        if (panel.audioSink.audio.muted || panel.audioSink.audio.volume <= 0)
-                            return "\uf026"; // volume muted
-                        if (panel.audioSink.audio.volume < 0.5)
-                            return "\uf027"; // volume medium
-                        return "\uf028"; // volume full
-                    }
-                    active: panel.audioSink && panel.audioSink.audio && !panel.audioSink.audio.muted
-                    disabled: !panel.audioSink || !panel.audioSink.audio
-                    onClicked: panel.togglePopup("audio")
-                    onScrolled: function(value) {
-                        if (panel.audioSink && panel.audioSink.audio)
-                            panel.audioSink.audio.volume = Math.max(0, Math.min(1, panel.audioSink.audio.volume + (value > 0 ? 0.05 : -0.05)));
-                    }
-                }
-
-                UI.IconButton {
-                    id: wifiButton
-
-                    icon: "\uf1eb"
-                    active: Networking.wifiEnabled && panel.wifiDevice && panel.wifiDevice.connected
-                    onClicked: panel.togglePopup("wifi")
-                }
-
-                UI.IconButton {
-                    id: bluetoothButton
-
-                    icon: "\uf294"
-                    active: panel.bluetoothAdapter && panel.bluetoothAdapter.enabled
-                    onClicked: panel.togglePopup("bluetooth")
-                }
-
-                UI.IconButton {
-                    id: wallpaperButton
-
-                    icon: "\uf03e"
-                    active: panel.activePopup === "wallpaper"
-                    onClicked: panel.togglePopup("wallpaper")
-                }
-
-                UI.IconButton {
-                    id: sessionButton
-
-                    icon: "\uf011"
-                    active: panel.activePopup === "session"
-                    onClicked: panel.togglePopup("session")
-                }
             }
 
             Bar.BatteryTooltip {
                 targetItem: batteryItem
                 battery: panel.battery
-                open: batteryMouseArea.containsMouse
+                open: batteryMouseArea.containsMouse && panel.activePopup === "" && panel.pendingPopup === ""
             }
 
             Bar.ClockTooltip {
                 targetItem: clockItem
                 clock: systemClock
-                open: clockMouseArea.containsMouse
+                open: clockMouseArea.containsMouse && panel.activePopup === "" && panel.pendingPopup === ""
             }
 
             Audio.AudioPopup {
-                panelWindow: panel
+                targetItem: volumeButton
                 outputNode: panel.audioSink
                 inputNode: panel.audioSource
                 open: panel.activePopup === "audio"
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
+            }
+
+            Media.MediaPopup {
+                targetItem: mediaWidget
+                player: mediaController.player
+                open: panel.activePopup === "media"
+                onCloseRequested: panel.closePopup()
             }
 
             Calendar.CalendarPopup {
-                panelWindow: panel
+                targetItem: clockItem
                 clock: systemClock
                 weatherLocation: weatherService.location.replace(/_/g, " ")
                 weatherText: weatherService.text
                 open: panel.activePopup === "calendar"
                 onRefreshWeatherRequested: weatherService.refresh()
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
             }
 
             Notifications.NotificationsPopup {
-                panelWindow: panel
+                targetItem: notificationButton
                 server: notificationServer
                 open: panel.activePopup === "notifications"
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
+            }
+
+            Notifications.IncomingNotificationPopup {
+                targetItem: notificationButton
+                notifications: shellRoot.incomingNotifications
+                open: shellRoot.incomingNotifications.length > 0
+                onDismissRequested: function(notification) {
+                    shellRoot.dismissIncomingNotification(notification);
+                }
             }
 
             Wallpaper.WallpaperPopup {
-                panelWindow: panel
+                targetItem: wallpaperButton
                 open: panel.activePopup === "wallpaper"
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
             }
 
             Session.SessionMenu {
-                panelWindow: panel
+                targetItem: sessionButton
                 idleLockEnabled: shellRoot.idleLockEnabled
                 open: panel.activePopup === "session"
                 onLockRequested: {
-                    panel.activePopup = "";
+                    panel.closePopup();
                     sessionLock.requestLock();
                 }
                 onToggleIdleRequested: shellRoot.idleLockEnabled = !shellRoot.idleLockEnabled
                 onActionRequested: function(action) {
-                    panel.activePopup = "";
+                    panel.closePopup();
                     if (action === "logout")
                         Quickshell.execDetached(["swaymsg", "exit"]);
                     else if (action === "suspend")
@@ -379,27 +431,27 @@ ShellRoot {
                     else if (action === "shutdown")
                         Quickshell.execDetached(["systemctl", "poweroff"]);
                 }
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
             }
 
             Tray.TrayPopup {
-                panelWindow: panel
+                targetItem: trayButton
                 open: panel.activePopup === "tray"
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
             }
 
             Network.WifiPopup {
-                panelWindow: panel
+                targetItem: wifiButton
                 wifiDevice: panel.wifiDevice
                 open: panel.activePopup === "wifi"
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
             }
 
             BluetoothFeature.BluetoothPopup {
-                panelWindow: panel
+                targetItem: bluetoothButton
                 adapter: panel.bluetoothAdapter
                 open: panel.activePopup === "bluetooth"
-                onCloseRequested: panel.activePopup = ""
+                onCloseRequested: panel.closePopup()
             }
         }
     }

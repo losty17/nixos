@@ -5,56 +5,73 @@ Item {
     id: root
 
     property var player
+    property bool active: false
+    signal clicked()
+
     visible: !!player
-    width: visible ? 290 : 0
+    width: visible ? 320 : 0
     height: 28
 
-    Row {
+    Rectangle {
         anchors.fill: parent
-        spacing: 2
+        radius: UI.Theme.controlRadius
+        color: mouseArea.pressed ? UI.Theme.accent : mouseArea.containsMouse || root.active ? UI.Theme.strongHover : "transparent"
 
-        UI.IconButton {
-            icon: "\uf04a"
-            active: true
-            disabled: !root.player || !root.player.canGoPrevious
-            onClicked: if (root.player) root.player.previous()
-        }
+        Row {
+            anchors.fill: parent
+            anchors.leftMargin: 3
+            anchors.rightMargin: 8
+            spacing: 7
 
-        UI.IconButton {
-            icon: root.player && root.player.isPlaying ? "\uf04c" : "\uf04b"
-            active: true
-            disabled: !root.player || !root.player.canTogglePlaying
-            onClicked: if (root.player) root.player.togglePlaying()
-        }
+            Rectangle {
+                width: 22
+                height: 22
+                anchors.verticalCenter: parent.verticalCenter
+                radius: 4
+                color: UI.Theme.inset
+                clip: true
 
-        UI.IconButton {
-            icon: "\uf04e"
-            active: true
-            disabled: !root.player || !root.player.canGoNext
-            onClicked: if (root.player) root.player.next()
-        }
+                Image {
+                    id: coverImage
 
-        Column {
-            width: parent.width - 86
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 1
+                    anchors.fill: parent
+                    source: root.player ? root.player.trackArtUrl : ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    cache: true
+                    visible: status === Image.Ready
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    visible: !coverImage.visible
+                    text: "\uf001"
+                    color: UI.Theme.mutedText
+                    font.family: UI.Theme.iconFont
+                    font.pixelSize: 12
+                }
+            }
 
             Text {
-                width: parent.width
-                text: root.player ? (root.player.trackTitle || root.player.identity || "Nothing playing") : ""
+                width: parent.width - 29
+                height: parent.height
+                verticalAlignment: Text.AlignVCenter
+                text: root.player ? (root.player.trackTitle || root.player.identity || "Nothing playing") + (root.player.trackArtist ? " - " + root.player.trackArtist : "") : ""
                 color: UI.Theme.text
                 elide: Text.ElideRight
-                font.pixelSize: 11
+                font.family: UI.Theme.textFont
+                font.pixelSize: 12
                 font.weight: 600
             }
+        }
 
-            Text {
-                width: parent.width
-                text: root.player ? (root.player.trackArtist || root.player.identity || "") : ""
-                color: UI.Theme.mutedText
-                elide: Text.ElideRight
-                font.pixelSize: 10
-            }
+        MouseArea {
+            id: mouseArea
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.clicked()
         }
     }
 }

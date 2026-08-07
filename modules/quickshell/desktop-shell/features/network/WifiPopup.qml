@@ -8,7 +8,7 @@ import "../../components" as UI
 PopupWindow {
     id: root
 
-    property var panelWindow
+    property Item targetItem
     property var wifiDevice
     property bool open: false
     property var pendingNetwork: null
@@ -22,19 +22,19 @@ PopupWindow {
     implicitWidth: 360
     implicitHeight: passwordPrompt ? 230 : 430
 
-    anchor.window: panelWindow
-    anchor.rect.x: panelWindow ? panelWindow.width - width - 4 : 0
-    anchor.rect.y: panelWindow ? panelWindow.height + 4 : 0
-    anchor.edges: Edges.Top | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.item: root.targetItem
+    anchor.rect.x: root.targetItem ? root.targetItem.width - width : 0
+    anchor.rect.y: root.targetItem ? root.targetItem.height + 4 : 0
     anchor.adjustment: PopupAdjustment.All
 
     onVisibleChanged: {
         if (!visible) {
             if (wifiDevice)
                 wifiDevice.scannerEnabled = false;
-            if (open)
-                root.closeRequested();
+            Qt.callLater(function() {
+                if (!root.visible && root.open)
+                    root.closeRequested();
+            });
             passwordPrompt = false;
             pendingNetwork = null;
             errorMessage = "";

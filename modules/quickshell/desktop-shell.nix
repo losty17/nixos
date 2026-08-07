@@ -62,7 +62,10 @@ in
       ExecStart = "${pkgs.quickshell}/bin/quickshell --config desktop-shell";
       Restart = "on-failure";
       RestartSec = 2;
-      Environment = [ "XDG_CONFIG_HOME=%h/.config" ];
+      Environment = [
+        "XDG_CONFIG_HOME=%h/.config"
+        "QT_PLUGIN_PATH=${pkgs.qt6.qtimageformats}/lib/qt-6/plugins"
+      ];
     };
 
     Install = {
