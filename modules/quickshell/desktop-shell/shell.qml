@@ -16,6 +16,7 @@ import "components" as UI
 import "features/audio" as Audio
 import "features/bluetooth" as BluetoothFeature
 import "features/calendar" as Calendar
+import "features/giphy" as Giphy
 import "features/media" as Media
 import "features/network" as Network
 import "features/notifications" as Notifications
@@ -103,6 +104,10 @@ ShellRoot {
 
     Services.MediaController {
         id: mediaController
+    }
+
+    Services.GiphyService {
+        id: giphyService
     }
 
     IdleMonitor {
@@ -216,9 +221,17 @@ ShellRoot {
                 UI.IconButton {
                     id: wallpaperButton
 
-                    icon: "\uf03e"
+                    icon: "\uf008"
                     active: panel.activePopup === "wallpaper"
                     onClicked: panel.togglePopup("wallpaper")
+                }
+
+                UI.IconButton {
+                    id: giphyButton
+
+                    icon: "\uf03e"
+                    active: panel.activePopup === "giphy"
+                    onClicked: panel.togglePopup("giphy")
                 }
 
                 Bar.MediaWidget {
@@ -425,6 +438,14 @@ ShellRoot {
             Wallpaper.WallpaperPopup {
                 targetItem: wallpaperButton
                 open: panel.activePopup === "wallpaper"
+                onCloseRequested: panel.closePopup()
+            }
+
+            Giphy.GiphyPopup {
+                targetItem: giphyButton
+                screen: panel.screen
+                service: giphyService
+                open: panel.activePopup === "giphy"
                 onCloseRequested: panel.closePopup()
             }
 

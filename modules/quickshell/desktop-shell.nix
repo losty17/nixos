@@ -1,6 +1,9 @@
 { config, pkgs, ... }:
 
 let
+  giphySearch = pkgs.writeScriptBin "giphy-search" (
+    "#!${pkgs.python3}/bin/python3\n" + builtins.readFile ./giphy-search.py
+  );
   restoreWallpaper = pkgs.writeShellScript "restore-desktop-wallpaper" ''
     stateFile="${config.home.homeDirectory}/.config/quickshell/wallpaper-state"
     defaultWallpaper="${config.home.homeDirectory}/Pictures/Wallpapers/wallhaven-6llkol.png"
@@ -25,6 +28,8 @@ in
     pkgs.curl
     pkgs.gcalcli
     pkgs.awww
+    pkgs.wl-clipboard
+    giphySearch
   ];
 
   home.file.".config/quickshell/desktop-shell".source = ./desktop-shell;
