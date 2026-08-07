@@ -28,7 +28,7 @@ ShellRoot {
     id: shellRoot
 
     property bool idleLockEnabled: true
-    property int idleLockTimeout: 900
+    property int idleLockTimeout: 300
     property var incomingNotifications: []
 
     function showIncomingNotification(notification) {
