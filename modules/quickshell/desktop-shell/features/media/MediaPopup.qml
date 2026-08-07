@@ -8,18 +8,35 @@ PopupWindow {
     property Item targetItem
     property var player
     property bool open: false
+    readonly property real currentPosition: player && player.positionSupported ? player.position : 0
+    readonly property real trackLength: player && player.lengthSupported ? player.length : 0
+    readonly property bool progressAvailable: currentPosition >= 0 && trackLength > 0
     signal closeRequested()
 
     visible: open && !!player
     grabFocus: true
     color: "transparent"
     implicitWidth: 380
-    implicitHeight: 480
+    implicitHeight: 520
 
     anchor.item: root.targetItem
     anchor.rect.x: 0
     anchor.rect.y: root.targetItem ? root.targetItem.height + 4 : 0
     anchor.adjustment: PopupAdjustment.All
+
+    function formatTime(seconds) {
+        const value = Math.max(0, Math.floor(seconds));
+        const minutes = Math.floor(value / 60);
+        const remainder = value % 60;
+        return minutes + ":" + (remainder < 10 ? "0" : "") + remainder;
+    }
+
+    Timer {
+        running: root.visible && root.player && root.player.isPlaying && root.player.positionSupported
+        interval: 1000
+        repeat: true
+        onTriggered: root.player.positionChanged()
+    }
 
     onVisibleChanged: {
         if (!visible)
@@ -102,6 +119,47 @@ PopupWindow {
                     elide: Text.ElideRight
                     font.family: UI.Theme.textFont
                     font.pixelSize: 12
+                }
+            }
+
+            Column {
+                width: parent.width
+                spacing: 5
+                visible: root.progressAvailable
+
+                Rectangle {
+                    width: parent.width
+                    height: 5
+                    radius: height / 2
+                    color: UI.Theme.border
+
+                    Rectangle {
+                        width: root.progressAvailable ? parent.width * Math.min(1, root.currentPosition / root.trackLength) : 0
+                        height: parent.height
+                        radius: parent.radius
+                        color: UI.Theme.accent
+                    }
+                }
+
+                Item {
+                    width: parent.width
+                    height: 14
+
+                    Text {
+                        anchors.left: parent.left
+                        text: root.formatTime(root.currentPosition)
+                        color: UI.Theme.mutedText
+                        font.family: UI.Theme.textFont
+                        font.pixelSize: 11
+                    }
+
+                    Text {
+                        anchors.right: parent.right
+                        text: root.formatTime(root.trackLength)
+                        color: UI.Theme.mutedText
+                        font.family: UI.Theme.textFont
+                        font.pixelSize: 11
+                    }
                 }
             }
 
