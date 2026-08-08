@@ -49,6 +49,7 @@
   networking.networkmanager.dns = "systemd-resolved";
   networking.firewall.trustedInterfaces = [ "docker0" ];
   networking.firewall.allowedTCPPorts = [ 22 8080 ];
+  networking.firewall.allowedUDPPorts = [ 9993 ];
 
   services.openssh = {
     enable = true;
@@ -117,6 +118,13 @@
   };
 
   services.blueman.enable = true;
+
+  services.zerotierone = {
+    enable = true;
+    joinNetworks = [
+      "1c33c1ced0df3b5e"
+    ];
+  };
 
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
