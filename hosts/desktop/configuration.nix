@@ -1,6 +1,6 @@
 # /etc/nixos/configuration.nix
 
-{ config, inputs, pkgs, ... }:
+{ config, inputs, lib, pkgs, ... }:
 
 {
   imports =
@@ -78,23 +78,31 @@
   services.xserver = {
     enable = true;
     videoDrivers = [ "nvidia" ];
-
-    windowManager.i3.enable = true;
   };
 
   services.displayManager.sddm.enable = true;
+  programs.sway = {
+    enable = true;
+    package = pkgs.swayfx;
+    extraOptions = [ "--unsupported-gpu" ];
+    wrapperFeatures.gtk = true;
+  };
 
   services.gvfs.enable = true;
   services.tumbler.enable = true;
+  services.upower.enable = true;
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
   programs.seahorse.enable = true;
   services.flatpak.enable = true;
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common = {
-      default = [ "gtk" ];
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-wlr
+    ];
+    config.sway = {
+      default = lib.mkForce [ "wlr" "gtk" ];
       "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
     };
   };

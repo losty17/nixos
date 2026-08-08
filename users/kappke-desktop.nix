@@ -3,9 +3,10 @@
 {
   imports = [
     ./common.nix
+    ../modules/sway/sway.nix
+    ../modules/quickshell/desktop-shell.nix
     ../modules/thunar/thunar.nix
     ../modules/zen-browser/zen-browser.nix
-    ../modules/x11/i3.nix
     ../modules/nvim/nvim.nix
   ];
 
@@ -20,6 +21,7 @@
   };
 
   home.packages = with pkgs; [
+    vicinae
     spotify
     discord
     ani-cli
@@ -55,7 +57,8 @@
   ];
 
   home.sessionVariables = {
-    NIXOS_OZONE_WL = "0";
+    NIXOS_OZONE_WL = "1";
+    WLR_NO_HARDWARE_CURSORS = "1"; # Fix for invisible cursor on NVIDIA Wayland
     GTK_IM_MODULE = "cedilla";
     QT_IM_MODULE = "cedilla";
   };
