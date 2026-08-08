@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
 {
   imports = [
@@ -9,6 +9,9 @@
     ../modules/zen-browser/zen-browser.nix
     ../modules/nvim/nvim.nix
   ];
+
+  # Use the NVIDIA-compatible wrapper installed by the NixOS Sway module.
+  wayland.windowManager.sway.package = lib.mkForce null;
 
   programs.ghostty = {
     enable = true;
@@ -66,4 +69,25 @@
   home.file.".profile".text = ''
     export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/share:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share
   '';
+
+  home.file."Pictures/Wallpapers".source = lib.mkForce (
+    config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/nixos-config/hosts/desktop/wallpapers"
+  );
+
+  systemd.user.services.vicinae = {
+    Unit = {
+      Description = "Vicinae launcher daemon";
+      After = [ "sway-session.target" ];
+      PartOf = [ "sway-session.target" ];
+    };
+
+    Service = {
+      ExecStart = "${pkgs.vicinae}/bin/vicinae server --replace";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+
+    Install.WantedBy = [ "sway-session.target" ];
+  };
 }

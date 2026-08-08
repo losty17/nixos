@@ -10,6 +10,7 @@
   wayland.windowManager.sway = {
     enable = true;
     package = pkgs.swayfx;
+    extraOptions = [ "--unsupported-gpu" ];
     checkConfig = false; # enable swayfx configs
 
     config = rec {
