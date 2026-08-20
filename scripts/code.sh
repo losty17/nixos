@@ -4,7 +4,7 @@
 # set of windows: terminal, code, ai.
 #
 # Usage:
-#   code.sh [-t|--terminal-only] [project-name]
+#   code.sh [-t|--terminal-only] [project-name|.]
 #
 # Layout:
 #   ~/projects/<...>/<project>/   any depth; a folder is a project iff it
@@ -283,9 +283,14 @@ attach_or_switch() {
 # ---------------------------------------------------------------------------
 main() {
     parse_args "$@"
-    discover_projects
 
-    resolve_project "$TARGET_PROJECT"
+    if [ "$TARGET_PROJECT" = "." ]; then
+        PROJECT_DIR="$PWD"
+        TARGET_PROJECT="$(basename "$PROJECT_DIR")"
+    else
+        discover_projects
+        resolve_project "$TARGET_PROJECT"
+    fi
 
     if [ -z "$PROJECT_DIR" ]; then
       PROJECT_DIR="${PROJECT_PATHS[$TARGET_PROJECT]}"
