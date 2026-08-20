@@ -7,6 +7,7 @@
     ../modules/quickshell/desktop-shell.nix
     ../modules/thunar/thunar.nix
     ../modules/zen-browser/zen-browser.nix
+    ../modules/octapus-db/octapus-db.nix
   ];
 
   programs.ghostty = {
@@ -32,13 +33,13 @@
 
     # work related 
     bruno
-    rustdesk
+    # rustdesk
     posting
     lazygit
     opencode
     tableplus
     lazydocker
-    redisinsight
+    # redisinsight
     google-cloud-sdk
     (mongodb-compass.overrideAttrs (oldAttrs: {
       buildCommand = builtins.replaceStrings

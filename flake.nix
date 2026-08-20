@@ -14,6 +14,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    octapus-db = {
+      url = "github:LKTeloeken/octapus_db";
+    };
+
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
