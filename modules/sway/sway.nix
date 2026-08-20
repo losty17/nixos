@@ -102,6 +102,8 @@
     };
 
     extraConfig = ''
+      primary_selection disabled
+
       corner_radius 8
       blur enable
       blur_xray disable
