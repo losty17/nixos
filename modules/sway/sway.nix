@@ -9,9 +9,8 @@
 
   wayland.windowManager.sway = {
     enable = true;
-    package = pkgs.swayfx;
+    package = pkgs.sway;
     extraOptions = [ "--unsupported-gpu" ];
-    checkConfig = false; # enable swayfx configs
 
     config = rec {
       modifier = "Mod4";
@@ -101,18 +100,6 @@
       };
     };
 
-    extraConfig = ''
-      corner_radius 8
-      blur enable
-      blur_xray disable
-      blur_passes 2
-      blur_radius 5
-
-      # Ghostty-specific rules
-      for_window [app_id="com.mitchellh.ghostty"] {
-        blur enable
-      }
-    '';
   };
 
   home.packages = with pkgs; [

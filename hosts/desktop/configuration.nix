@@ -84,7 +84,7 @@
   services.displayManager.sddm.enable = true;
   programs.sway = {
     enable = true;
-    package = pkgs.swayfx;
+    package = pkgs.sway;
     extraOptions = [ "--unsupported-gpu" ];
     wrapperFeatures.gtk = true;
   };
@@ -125,6 +125,7 @@
       "1c33c1ced0df3b5e"
     ];
   };
+
 
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";

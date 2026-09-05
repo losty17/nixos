@@ -81,7 +81,7 @@
   # Enable Sway (Wayland) for the gaming session
   programs.sway = {
     enable = true;
-    package = pkgs.swayfx;
+    package = pkgs.sway;
     extraOptions = [ "--unsupported-gpu" ];
   };
 
