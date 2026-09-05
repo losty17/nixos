@@ -7,6 +7,7 @@
     ../modules/quickshell/desktop-shell.nix
     ../modules/thunar/thunar.nix
     ../modules/zen-browser/zen-browser.nix
+    ../modules/octapus-db/octapus-db.nix
     ../modules/nvim/nvim.nix
   ];
 
